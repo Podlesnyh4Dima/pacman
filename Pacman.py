@@ -54,17 +54,51 @@ tile_images = {
 }
 
 
+all_sprites = pygame.sprite.Group()
+tiles_group = pygame.sprite.Group()
+player_group = pygame.sprite.Group()
+
+
+class Border(pygame.sprite.Sprite):
+    def __init__(self, image, x):
+        super().__init__(all_sprites)
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.rect.bottomleft = x
+
+
+imageL1 = load_image('map/borderL1.png')
+borderL1 = Border(imageL1, (0, 600))
+
+imageL2 = load_image('map/borderL2.png')
+borderL2 = Border(imageL2, (500, 600))
+
+imageR1 = load_image('map/borderR1.png')
+borderR1 = Border(imageR1, (0, 600))
+
+imageR2 = load_image('map/borderR2.png')
+borderR2 = Border(imageR2, (500, 600))
+
+imageU1 = load_image('map/borderU1.png')
+borderU1 = Border(imageU1, (0, 600))
+
+imageU2 = load_image('map/borderU2.png')
+borderU2 = Border(imageU2, (500, 600))
+
+imageD1 = load_image('map/borderD1.png')
+borderD1 = Border(imageD1, (0, 600))
+
+imageD2 = load_image('map/borderD2.png')
+borderD2 = Border(imageD2, (500, 600))
+
+
 class Tile(pygame.sprite.Sprite):
     def __init__(self, tile_type, x_pos, y_pos):
         super().__init__(tiles_group, all_sprites)
         self.image = tile_images[tile_type]
         self.rect = self.image.get_rect().move(
             tile_width * x_pos, tile_height * y_pos)
-
-
-all_sprites = pygame.sprite.Group()
-tiles_group = pygame.sprite.Group()
-player_group = pygame.sprite.Group()
 
 
 class Player(pygame.sprite.Sprite):
@@ -90,20 +124,32 @@ class Player(pygame.sprite.Sprite):
         self.cur_frame = (self.cur_frame + 1) % len(self.frames)
         self.image = self.frames[self.cur_frame]
         if event.type == KEYDOWN:
-            if event.key == K_RIGHT:
+            if event.key == K_RIGHT and not pygame.sprite.collide_mask(self, borderR1) \
+                    and not pygame.sprite.collide_mask(self, borderR2):
                 self.movement_x = 5
                 self.movement_y = 0
-            elif event.key == K_LEFT:
+            if event.key == K_LEFT and not pygame.sprite.collide_mask(self, borderL1) \
+                    and not pygame.sprite.collide_mask(self, borderL2):
                 self.movement_x = -5
                 self.movement_y = 0
-            elif event.key == K_DOWN:
+            if event.key == K_DOWN and not pygame.sprite.collide_mask(self, borderD1):
                 self.movement_y = 5
                 self.movement_x = 0
-            elif event.key == K_UP:
+            if event.key == K_UP and not pygame.sprite.collide_mask(self, borderU1) \
+                    and not pygame.sprite.collide_mask(self, borderU2):
                 self.movement_y = -5
                 self.movement_x = 0
+
         self.rect.x += self.movement_x
         self.rect.y += self.movement_y
+
+        if pygame.sprite.collide_mask(self, borderL1) or pygame.sprite.collide_mask(self, borderR1) or \
+                pygame.sprite.collide_mask(self, borderL2) or pygame.sprite.collide_mask(self, borderR2):
+            self.movement_x = 0
+        if pygame.sprite.collide_mask(self, borderD1) or pygame.sprite.collide_mask(self, borderU1) or \
+                pygame.sprite.collide_mask(self, borderU2) or pygame.sprite.collide_mask(self, borderD2):
+            self.movement_y = 0
+
         if int(self.rect.x) >= width:
             self.rect.x = 0
         elif int(self.rect.x) < 0:
