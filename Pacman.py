@@ -127,7 +127,8 @@ class Player(pygame.sprite.Sprite):
                 self.movement_x = -5
                 self.movement_y = 0
                 self.lookD = "left"
-            if event.key == K_DOWN and not pygame.sprite.collide_mask(self, borderD1):
+            if event.key == K_DOWN and not pygame.sprite.collide_mask(self, borderD1) \
+                    and not pygame.sprite.collide_mask(self, borderD2):
                 self.movement_y = 5
                 self.movement_x = 0
                 self.lookD = "down"
@@ -140,12 +141,15 @@ class Player(pygame.sprite.Sprite):
         self.rect.x += self.movement_x
         self.rect.y += self.movement_y
 
-        if pygame.sprite.collide_mask(self, borderL1) or pygame.sprite.collide_mask(self, borderR1) or \
-                pygame.sprite.collide_mask(self, borderL2) or pygame.sprite.collide_mask(self, borderR2):
-            self.movement_x = 0
-        if pygame.sprite.collide_mask(self, borderD1) or pygame.sprite.collide_mask(self, borderU1) or \
-                pygame.sprite.collide_mask(self, borderU2) or pygame.sprite.collide_mask(self, borderD2):
-            self.movement_y = 0
+        if pygame.sprite.collide_mask(self, borderL1) or pygame.sprite.collide_mask(self, borderL2):
+            self.rect.x += 5
+        if pygame.sprite.collide_mask(self, borderR1) or pygame.sprite.collide_mask(self, borderR2):
+            self.rect.x += -5
+        if pygame.sprite.collide_mask(self, borderD1) or pygame.sprite.collide_mask(self, borderD2):
+            self.rect.y += -5
+        if pygame.sprite.collide_mask(self, borderU1) or pygame.sprite.collide_mask(self, borderU2):
+            self.rect.y += 5
+
 
         if int(self.rect.x) >= width:
             self.rect.x = 0
@@ -164,6 +168,7 @@ class Player(pygame.sprite.Sprite):
             self.image = pygame.transform.rotate(self.image, 90)
         if (self.lookD == "down"):
             self.image = pygame.transform.rotate(self.image, -90)
+
 
 
 def generate_level(level):
