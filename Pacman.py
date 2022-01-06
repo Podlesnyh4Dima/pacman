@@ -114,7 +114,7 @@ class Player(pygame.sprite.Sprite):
     image = load_image("pacman/pacman1.png")
 
     def __init__(self, columns, rows, x_pos, y_pos):
-        super().__init__(all_sprites)
+        super().__init__(all_sprites, player_group)
         self.movement_x = movement_x
         self.movement_y = movement_y
         self.frames = []
