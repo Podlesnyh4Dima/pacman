@@ -15,15 +15,8 @@ screen = pygame.display.set_mode(size)
 
 def load_image(name, colorkey=None):
     fullname = os.path.join('data', name)
-    image = pygame.image.load(fullname)
+    image = pygame.image.load(fullname).convert_alpha()
     return image
-
-
-right = load_image("pacman/pacman1.png")
-left = load_image("pacman/pacman2.png")
-up = load_image("pacman/pacman3.png")
-down = load_image("pacman/pacman4.png")
-character = up
 
 
 def load_level(filename):
@@ -102,16 +95,18 @@ class Tile(pygame.sprite.Sprite):
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, sheet, columns, rows, x_pos, y_pos):
+    image = load_image("pacman/pacman1.png")
+    def __init__(self, columns, rows, x_pos, y_pos):
         super().__init__(all_sprites)
         self.movement_x = movement_x
         self.movement_y = movement_y
         self.frames = []
-        self.cut_sheet(sheet, columns, rows)
+        self.cut_sheet(Player.image, columns, rows)
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
         self.rect = self.image.get_rect().move(
             tile_width * x_pos + 15, tile_height * y_pos + 5)
+        self.lookD = "right"
 
     def cut_sheet(self, sheet, columns, rows):
         self.rect = pygame.Rect(0, 0, sheet.get_width() // columns, sheet.get_height() // rows)
@@ -121,24 +116,26 @@ class Player(pygame.sprite.Sprite):
                 self.frames.append(sheet.subsurface(pygame.Rect(frame_location, self.rect.size)))
 
     def update(self):
-        self.cur_frame = (self.cur_frame + 1) % len(self.frames)
-        self.image = self.frames[self.cur_frame]
         if event.type == KEYDOWN:
             if event.key == K_RIGHT and not pygame.sprite.collide_mask(self, borderR1) \
                     and not pygame.sprite.collide_mask(self, borderR2):
                 self.movement_x = 5
                 self.movement_y = 0
+                self.lookD = "right"
             if event.key == K_LEFT and not pygame.sprite.collide_mask(self, borderL1) \
                     and not pygame.sprite.collide_mask(self, borderL2):
                 self.movement_x = -5
                 self.movement_y = 0
+                self.lookD = "left"
             if event.key == K_DOWN and not pygame.sprite.collide_mask(self, borderD1):
                 self.movement_y = 5
                 self.movement_x = 0
+                self.lookD = "down"
             if event.key == K_UP and not pygame.sprite.collide_mask(self, borderU1) \
                     and not pygame.sprite.collide_mask(self, borderU2):
                 self.movement_y = -5
                 self.movement_x = 0
+                self.lookD = "up"
 
         self.rect.x += self.movement_x
         self.rect.y += self.movement_y
@@ -158,6 +155,15 @@ class Player(pygame.sprite.Sprite):
             self.rect.y = 0
         elif int(self.rect.y) < 0:
             self.rect.y = height
+
+        self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+        self.image = self.frames[self.cur_frame]
+        if (self.lookD == "left"):
+            self.image = pygame.transform.flip(self.image, True, False)
+        if (self.lookD == "up"):
+            self.image = pygame.transform.rotate(self.image, 90)
+        if (self.lookD == "down"):
+            self.image = pygame.transform.rotate(self.image, -90)
 
 
 def generate_level(level):
@@ -198,7 +204,7 @@ def generate_level(level):
                 Tile('wall15', x, y)
             elif level[y][x] == '@':
                 Tile('empty', x, y)
-                new_player = Player(character, 3, 1, x, y)
+                new_player = Player(3, 1, x, y)
     return new_player, x, y
 
 
