@@ -87,6 +87,14 @@ imageD2 = load_image('map/borderD2.png')
 borderD2 = Border(imageD2, (500, 600))
 
 
+class Cherry(pygame.sprite.Sprite):
+    def __init__(self, x_pos, y_pos):
+        super().__init__(points_group, all_sprites)
+        self.image = pygame.image.load('data/cherry.png').convert_alpha()
+        self.rect = self.image.get_rect().move(
+            x_pos * tile_width + 23, 23 + y_pos * tile_height)
+        
+        
 class Point(pygame.sprite.Sprite):
     def __init__(self, x_pos, y_pos):
         super().__init__(points_group, all_sprites)
