@@ -195,6 +195,9 @@ def generate_level(level):
             if level[y][x] == '.':
                 Tile('empty', x, y)
                 Point(x, y)
+            elif level[y][x] == 'c':
+                Tile('empty', x, y)
+                Cherry(x, y)
             elif level[y][x] == '#':
                 Tile('wall', x, y)
             elif level[y][x] == '$':
