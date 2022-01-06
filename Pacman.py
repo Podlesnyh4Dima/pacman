@@ -7,9 +7,19 @@ movement_x = movement_y = 0
 FPS = 10
 clock = pygame.time.Clock()
 v = 5
+count = 0
 tile_width = tile_height = 50
-size = width, height = 1000, 600
+size = width, height = 1000, 650
 screen = pygame.display.set_mode(size)
+
+
+def draw(screen):
+    global count
+
+    pygame.font.init()
+    font = pygame.font.Font(None, 50)
+    screen.blit(load_image('fon.png'), (0, 600))
+    screen.blit(font.render('Счёт: ' + str(count), False, (255, 255, 255)), (0, 600))
 
 
 def load_image(name, colorkey=None):
@@ -50,6 +60,8 @@ tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
 points_group = pygame.sprite.Group()
 enemy_group = pygame.sprite.Group()
+cherry_group = pygame.sprite.Group()
+super_points_group = pygame.sprite.Group()
 
 
 class Border(pygame.sprite.Sprite):
@@ -88,7 +100,7 @@ borderD2 = Border(imageD2, (500, 600))
 
 class Cherry(pygame.sprite.Sprite):
     def __init__(self, x_pos, y_pos):
-        super().__init__(points_group, all_sprites)
+        super().__init__(cherry_group, all_sprites)
         self.image = pygame.image.load('data/cherry.png').convert_alpha()
         self.rect = self.image.get_rect().move(
             x_pos * tile_width + 23, 23 + y_pos * tile_height)
@@ -98,6 +110,14 @@ class Point(pygame.sprite.Sprite):
     def __init__(self, x_pos, y_pos):
         super().__init__(points_group, all_sprites)
         self.image = pygame.image.load('data/point.png').convert_alpha()
+        self.rect = self.image.get_rect().move(
+            x_pos * tile_width + 23, 23 + y_pos * tile_height)
+
+
+class SuperPoint(pygame.sprite.Sprite):
+    def __init__(self, x_pos, y_pos):
+        super().__init__(super_points_group, all_sprites)
+        self.image = pygame.image.load('data/super_point.png').convert_alpha()
         self.rect = self.image.get_rect().move(
             x_pos * tile_width + 23, 23 + y_pos * tile_height)
 
@@ -190,7 +210,7 @@ class Enemy(pygame.sprite.Sprite):
     image = load_image("red_ghost.png")
 
     def __init__(self, columns, rows, x_pos, y_pos):
-        super().__init__(all_sprites)
+        super().__init__(all_sprites, enemy_group)
         self.movement_x = movement_x
         self.movement_y = movement_y
         self.frames = []
@@ -269,6 +289,9 @@ def generate_level(level):
             elif level[y][x] == 'c':
                 Tile('empty', x, y)
                 Cherry(x, y)
+            if level[y][x] == 's':
+                Tile('empty', x, y)
+                SuperPoint(x, y)
             elif level[y][x] == '#':
                 Tile('wall', x, y)
             elif level[y][x] == '$':
@@ -309,8 +332,23 @@ def generate_level(level):
     return new_enemy, new_player, x, y
 
 
-def collision(points_group, player_group):
+def collision(points_group, player_group, cherry_group, enemy_group, super_points_group):
+    global count
     collisions = pygame.sprite.groupcollide(player_group, points_group, False, True)
+    collisions_for_cherry = pygame.sprite.groupcollide(player_group, cherry_group, False, True)
+    super_point = pygame.sprite.groupcollide(player_group, super_points_group, False, True)
+    enemy_and_player = pygame.sprite.groupcollide(enemy_group, player_group, False, True)
+    if collisions:
+        count += 10
+    if collisions_for_cherry:
+        count += 100
+    if super_point:
+        count += 50
+        pygame.sprite.groupcollide(enemy_group, player_group, True, False)
+    if enemy_and_player:
+        pygame.font.init()
+        font = pygame.font.SysFont('Comic Sans MS', 30)
+        screen.blit(font.render('Game over', False, (255, 0, 0)), (500, 600))
 
 
 enemy, player, level_x, level_y = generate_level(load_level('levelex.txt'))
@@ -321,8 +359,9 @@ while running:
         if event.type == pygame.QUIT:
             running = False
     all_sprites.draw(screen)
+    draw(screen)
     all_sprites.update()
-    collision(points_group, player_group)
+    collision(points_group, player_group, cherry_group, enemy_group, super_points_group)
     clock.tick(FPS)
     pygame.display.flip()
 pygame.quit()
