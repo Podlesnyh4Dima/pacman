@@ -19,7 +19,8 @@ def draw(screen):
     pygame.font.init()
     font = pygame.font.Font(None, 50)
     screen.blit(load_image('fon.png'), (0, 600))
-    screen.blit(font.render('Счёт: ' + str(count), False, (255, 255, 255)), (0, 600))
+    screen.blit(font.render('Счёт: ' + str(count), False,
+                            (255, 255, 255)), (0, 600))
 
 
 def load_image(name, colorkey=None):
@@ -36,6 +37,7 @@ def load_level(filename):
     return list(map(lambda x: x.ljust(max_width, '.'), level_map))
 
 
+player_image = load_image("pacman/pacman1.png")
 tile_images = {
     'wall': load_image('map/wall.png'),
     'empty': load_image('map/black.png'),
@@ -52,7 +54,8 @@ tile_images = {
     'wall12': load_image('map/wall12.png'),
     'wall13': load_image('map/wall13.png'),
     'wall14': load_image('map/wall14.png'),
-    'wall15': load_image('map/wall15.png')
+    'wall15': load_image('map/wall15.png'),
+    'wall16': load_image('map/wall16.png')
 }
 
 all_sprites = pygame.sprite.Group()
@@ -101,7 +104,7 @@ borderD2 = Border(imageD2, (500, 600))
 class Cherry(pygame.sprite.Sprite):
     def __init__(self, x_pos, y_pos):
         super().__init__(cherry_group, all_sprites)
-        self.image = pygame.image.load('data/cherry.png').convert_alpha()
+        self.image = pygame.image.load('data/cherry.png')
         self.rect = self.image.get_rect().move(
             x_pos * tile_width + 23, 23 + y_pos * tile_height)
 
@@ -109,7 +112,7 @@ class Cherry(pygame.sprite.Sprite):
 class Point(pygame.sprite.Sprite):
     def __init__(self, x_pos, y_pos):
         super().__init__(points_group, all_sprites)
-        self.image = pygame.image.load('data/point.png').convert_alpha()
+        self.image = pygame.image.load('data/point.png')
         self.rect = self.image.get_rect().move(
             x_pos * tile_width + 23, 23 + y_pos * tile_height)
 
@@ -117,7 +120,7 @@ class Point(pygame.sprite.Sprite):
 class SuperPoint(pygame.sprite.Sprite):
     def __init__(self, x_pos, y_pos):
         super().__init__(super_points_group, all_sprites)
-        self.image = pygame.image.load('data/super_point.png').convert_alpha()
+        self.image = pygame.image.load('data/super_point.png')
         self.rect = self.image.get_rect().move(
             x_pos * tile_width + 23, 23 + y_pos * tile_height)
 
@@ -131,7 +134,7 @@ class Tile(pygame.sprite.Sprite):
 
 
 class Player(pygame.sprite.Sprite):
-    image = load_image("pacman/pacman1.png")
+    image = player_image
 
     def __init__(self, columns, rows, x_pos, y_pos):
         super().__init__(all_sprites, player_group)
@@ -146,30 +149,36 @@ class Player(pygame.sprite.Sprite):
         self.lookD = "right"
 
     def cut_sheet(self, sheet, columns, rows):
-        self.rect = pygame.Rect(0, 0, sheet.get_width() // columns, sheet.get_height() // rows)
+        self.rect = pygame.Rect(0, 0, sheet.get_width() // columns,
+                                sheet.get_height() // rows)
         for j in range(rows):
             for i in range(columns):
                 frame_location = (self.rect.w * i, self.rect.h * j)
-                self.frames.append(sheet.subsurface(pygame.Rect(frame_location, self.rect.size)))
+                self.frames.append(sheet.subsurface(pygame.Rect(frame_location,
+                                                    self.rect.size)))
 
     def update(self):
         if event.type == KEYDOWN:
-            if event.key == K_RIGHT and not pygame.sprite.collide_mask(self, borderR1) \
+            if event.key == K_RIGHT \
+                    and not pygame.sprite.collide_mask(self, borderR1) \
                     and not pygame.sprite.collide_mask(self, borderR2):
                 self.movement_x = v
                 self.movement_y = 0
                 self.lookD = "right"
-            if event.key == K_LEFT and not pygame.sprite.collide_mask(self, borderL1) \
+            if event.key == K_LEFT \
+                    and not pygame.sprite.collide_mask(self, borderL1) \
                     and not pygame.sprite.collide_mask(self, borderL2):
                 self.movement_x = -v
                 self.movement_y = 0
                 self.lookD = "left"
-            if event.key == K_DOWN and not pygame.sprite.collide_mask(self, borderD1) \
+            if event.key == K_DOWN \
+                    and not pygame.sprite.collide_mask(self, borderD1) \
                     and not pygame.sprite.collide_mask(self, borderD2):
                 self.movement_y = v
                 self.movement_x = 0
                 self.lookD = "down"
-            if event.key == K_UP and not pygame.sprite.collide_mask(self, borderU1) \
+            if event.key == K_UP \
+                    and not pygame.sprite.collide_mask(self, borderU1) \
                     and not pygame.sprite.collide_mask(self, borderU2):
                 self.movement_y = -v
                 self.movement_x = 0
@@ -178,13 +187,17 @@ class Player(pygame.sprite.Sprite):
         self.rect.x += self.movement_x
         self.rect.y += self.movement_y
 
-        if pygame.sprite.collide_mask(self, borderL1) or pygame.sprite.collide_mask(self, borderL2):
+        if pygame.sprite.collide_mask(self, borderL1) \
+                or pygame.sprite.collide_mask(self, borderL2):
             self.rect.x += v
-        if pygame.sprite.collide_mask(self, borderR1) or pygame.sprite.collide_mask(self, borderR2):
+        if pygame.sprite.collide_mask(self, borderR1) \
+                or pygame.sprite.collide_mask(self, borderR2):
             self.rect.x += -v
-        if pygame.sprite.collide_mask(self, borderD1) or pygame.sprite.collide_mask(self, borderD2):
+        if pygame.sprite.collide_mask(self, borderD1) \
+                or pygame.sprite.collide_mask(self, borderD2):
             self.rect.y += -v
-        if pygame.sprite.collide_mask(self, borderU1) or pygame.sprite.collide_mask(self, borderU2):
+        if pygame.sprite.collide_mask(self, borderU1) \
+                or pygame.sprite.collide_mask(self, borderU2):
             self.rect.y += v
 
         if int(self.rect.x) >= width:
@@ -218,15 +231,17 @@ class Enemy(pygame.sprite.Sprite):
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
         self.rect = self.image.get_rect().move(
-            tile_width * x_pos + 15, tile_height * y_pos + 5)
-        self.lookD = "right"
+            tile_width * x_pos + 25, tile_height * y_pos + 5)
+        self.lookD = "left"
 
     def cut_sheet(self, sheet, columns, rows):
-        self.rect = pygame.Rect(0, 0, sheet.get_width() // columns, sheet.get_height() // rows)
+        self.rect = pygame.Rect(0, 0, sheet.get_width() // columns,
+                                sheet.get_height() // rows)
         for j in range(rows):
             for i in range(columns):
                 frame_location = (self.rect.w * i, self.rect.h * j)
-                self.frames.append(sheet.subsurface(pygame.Rect(frame_location, self.rect.size)))
+                self.frames.append(sheet.subsurface(pygame.Rect(
+                    frame_location,  self.rect.size)))
 
     def update(self):
         self.rect.x += -v
@@ -249,7 +264,8 @@ class Enemy(pygame.sprite.Sprite):
             self.rect.x += v
             self.rect.y += v
             self.lookD = "down"
-        if pygame.sprite.collide_mask(self, borderD1) or pygame.sprite.collide_mask(self, borderD2):
+        if pygame.sprite.collide_mask(self, borderD1) \
+                or pygame.sprite.collide_mask(self, borderD2):
             self.rect.y += -v
             self.rect.x += v
             self.lookD = "left"
@@ -289,9 +305,11 @@ def generate_level(level):
             elif level[y][x] == 'c':
                 Tile('empty', x, y)
                 Cherry(x, y)
-            if level[y][x] == 's':
+            elif level[y][x] == 's':
                 Tile('empty', x, y)
                 SuperPoint(x, y)
+            elif level[y][x] == 'b':
+                Tile('empty', x, y)
             elif level[y][x] == '#':
                 Tile('wall', x, y)
             elif level[y][x] == '$':
@@ -322,6 +340,9 @@ def generate_level(level):
                 Tile('wall14', x, y)
             elif level[y][x] == '<':
                 Tile('wall15', x, y)
+            elif level[y][x] == '"':
+                Tile('wall16', x, y)
+                Point(x, y)
             elif level[y][x] == '@':
                 Tile('empty', x, y)
                 new_player = Player(3, 1, x, y)
@@ -332,12 +353,17 @@ def generate_level(level):
     return new_enemy, new_player, x, y
 
 
-def collision(points_group, player_group, cherry_group, enemy_group, super_points_group):
+def collision(points_group, player_group, cherry_group, enemy_group,
+              super_points_group):
     global count
-    collisions = pygame.sprite.groupcollide(player_group, points_group, False, True)
-    collisions_for_cherry = pygame.sprite.groupcollide(player_group, cherry_group, False, True)
-    super_point = pygame.sprite.groupcollide(player_group, super_points_group, False, True)
-    enemy_and_player = pygame.sprite.groupcollide(enemy_group, player_group, False, True)
+    collisions = pygame.sprite.groupcollide(player_group, points_group,
+                                            False, True)
+    collisions_for_cherry = pygame.sprite.groupcollide(
+        player_group, cherry_group, False, True)
+    super_point = pygame.sprite.groupcollide(player_group, super_points_group,
+                                             False, True)
+    enemy_and_player = pygame.sprite.groupcollide(enemy_group, player_group,
+                                                  False, True)
     if collisions:
         count += 10
     if collisions_for_cherry:
@@ -361,7 +387,8 @@ while running:
     all_sprites.draw(screen)
     draw(screen)
     all_sprites.update()
-    collision(points_group, player_group, cherry_group, enemy_group, super_points_group)
+    collision(points_group, player_group, cherry_group, enemy_group,
+              super_points_group)
     clock.tick(FPS)
     pygame.display.flip()
 pygame.quit()
