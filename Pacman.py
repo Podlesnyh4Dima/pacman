@@ -1,6 +1,7 @@
 import pygame
 import os
 from pygame.locals import *
+import sys
 
 pygame.display.set_caption('Pacman')
 movement_x = movement_y = 0
@@ -15,12 +16,14 @@ screen = pygame.display.set_mode(size)
 
 def draw(screen):
     global count
-
     pygame.font.init()
     font = pygame.font.Font(None, 50)
-    screen.blit(load_image('fon.png'), (0, 600))
+    screen.blit(pygame.transform.scale(load_image('fon.png'), (1000, 50)),  (0, 600))
     screen.blit(font.render('Счёт: ' + str(count), False,
                             (255, 255, 255)), (0, 600))
+    screen.blit(font.render('Win', False,
+                            (255, 255, 255)), (400, 600))
+    screen.blit(font.render('Game over', False, (255, 255, 255)), (750, 600))
 
 
 def load_image(name, colorkey=None):
@@ -37,6 +40,7 @@ def load_level(filename):
     return list(map(lambda x: x.ljust(max_width, '.'), level_map))
 
 
+pygame.display.set_icon(load_image('logo.png'))
 player_image = load_image("pacman/pacman1.png")
 tile_images = {
     'wall': load_image('map/wall.png'),
@@ -54,8 +58,7 @@ tile_images = {
     'wall12': load_image('map/wall12.png'),
     'wall13': load_image('map/wall13.png'),
     'wall14': load_image('map/wall14.png'),
-    'wall15': load_image('map/wall15.png'),
-    'wall16': load_image('map/wall16.png')
+    'wall15': load_image('map/wall15.png')
 }
 
 all_sprites = pygame.sprite.Group()
@@ -250,11 +253,11 @@ class Enemy(pygame.sprite.Sprite):
 
         if pygame.sprite.collide_mask(self, borderL1):
             self.rect.x += v
-            self.rect.y += -v * 1.5
+            self.rect.y += v * 1.5
             self.lookD = "up"
         if pygame.sprite.collide_mask(self, borderL2):
             self.rect.x += v
-            self.rect.y += -v
+            self.rect.y += v
             self.lookD = "up"
         if pygame.sprite.collide_mask(self, borderR1):
             self.rect.x += v
@@ -293,6 +296,7 @@ class Enemy(pygame.sprite.Sprite):
             self.image = pygame.transform.rotate(self.image, 90)
         if self.lookD == "down":
             self.image = pygame.transform.rotate(self.image, -90)
+
 
 
 def generate_level(level):
@@ -340,9 +344,6 @@ def generate_level(level):
                 Tile('wall14', x, y)
             elif level[y][x] == '<':
                 Tile('wall15', x, y)
-            elif level[y][x] == '"':
-                Tile('wall16', x, y)
-                Point(x, y)
             elif level[y][x] == '@':
                 Tile('empty', x, y)
                 new_player = Player(3, 1, x, y)
@@ -351,6 +352,9 @@ def generate_level(level):
                 new_enemy = Enemy(2, 1, x, y)
                 Point(x, y)
     return new_enemy, new_player, x, y
+
+
+enemy, player, level_x, level_y = generate_level(load_level('level3.txt'))
 
 
 def collision(points_group, player_group, cherry_group, enemy_group,
@@ -374,10 +378,16 @@ def collision(points_group, player_group, cherry_group, enemy_group,
     if enemy_and_player:
         pygame.font.init()
         font = pygame.font.SysFont('Comic Sans MS', 30)
-        screen.blit(font.render('Game over', False, (255, 0, 0)), (500, 600))
+        screen.blit(font.render('Game over', False, (255, 0, 0)), (750, 600))
+    if count >= 1510 and count < 3030:
+        generate_level(load_level('level2.txt'))
+    elif count >= 3030 and count < 4450:
+        generate_level(load_level('level3.txt'))
+    elif count >= 4450:
+        pygame.font.init()
+        font = pygame.font.Font(None, 50)
+        screen.blit(font.render('Win', False, (0, 255, 0)), (400, 600))
 
-
-enemy, player, level_x, level_y = generate_level(load_level('levelex.txt'))
 
 running = True
 while running:
