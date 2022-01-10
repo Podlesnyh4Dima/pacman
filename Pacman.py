@@ -40,25 +40,25 @@ def load_level(filename):
     return list(map(lambda x: x.ljust(max_width, '.'), level_map))
 
 
-pygame.display.set_icon(load_image('logo.png'))
+# pygame.display.set_icon(load_image('logo.png'))
 player_image = load_image("pacman/pacman1.png")
 tile_images = {
-    'wall': load_image('map/wall.png'),
-    'empty': load_image('map/black.png'),
-    'wall2': load_image('map/wall2.png'),
-    'wall3': load_image('map/wall3.png'),
-    'wall4': load_image('map/wall4.png'),
-    'wall5': load_image('map/wall5.png'),
-    'wall6': load_image('map/wall6.png'),
-    'wall7': load_image('map/wall7.png'),
-    'wall8': load_image('map/wall8.png'),
-    'wall9': load_image('map/wall9.png'),
-    'wall10': load_image('map/wall10.png'),
-    'wall11': load_image('map/wall11.png'),
-    'wall12': load_image('map/wall12.png'),
-    'wall13': load_image('map/wall13.png'),
-    'wall14': load_image('map/wall14.png'),
-    'wall15': load_image('map/wall15.png')
+    'b': load_image('map/black.png'),
+    '#': load_image('map/wall.png'),
+    '$': load_image('map/wall2.png'),
+    '!': load_image('map/wall3.png'),
+    '%': load_image('map/wall4.png'),
+    '^': load_image('map/wall5.png'),
+    '&': load_image('map/wall6.png'),
+    '*': load_image('map/wall7.png'),
+    '`': load_image('map/wall8.png'),
+    '~': load_image('map/wall9.png'),
+    '/': load_image('map/wall10.png'),
+    '?': load_image('map/wall11.png'),
+    '|': load_image('map/wall12.png'),
+    '>': load_image('map/wall13.png'),
+    ',': load_image('map/wall14.png'),
+    '<': load_image('map/wall15.png')
 }
 
 all_sprites = pygame.sprite.Group()
@@ -300,61 +300,27 @@ class Enemy(pygame.sprite.Sprite):
 
 
 def generate_level(level):
-    new_enemy, new_player, x, y = None, None, None, None
     for y in range(len(level)):
         for x in range(len(level[y])):
-            if level[y][x] == '.':
-                Tile('empty', x, y)
+            id = level[y][x]
+            if (id in tile_images):
+                Tile(id, x, y)
+                continue
+            Tile('b', x, y)
+            if id == '.':
                 Point(x, y)
-            elif level[y][x] == 'c':
-                Tile('empty', x, y)
+            elif id == 'c':
                 Cherry(x, y)
-            elif level[y][x] == 's':
-                Tile('empty', x, y)
+            elif id == 's':
                 SuperPoint(x, y)
-            elif level[y][x] == 'b':
-                Tile('empty', x, y)
-            elif level[y][x] == '#':
-                Tile('wall', x, y)
-            elif level[y][x] == '$':
-                Tile('wall2', x, y)
-            elif level[y][x] == '!':
-                Tile('wall3', x, y)
-            elif level[y][x] == '%':
-                Tile('wall4', x, y)
-            elif level[y][x] == '^':
-                Tile('wall5', x, y)
-            elif level[y][x] == '&':
-                Tile('wall6', x, y)
-            elif level[y][x] == '*':
-                Tile('wall7', x, y)
-            elif level[y][x] == '`':
-                Tile('wall8', x, y)
-            elif level[y][x] == '~':
-                Tile('wall9', x, y)
-            elif level[y][x] == '/':
-                Tile('wall10', x, y)
-            elif level[y][x] == '?':
-                Tile('wall11', x, y)
-            elif level[y][x] == '|':
-                Tile('wall12', x, y)
-            elif level[y][x] == '>':
-                Tile('wall13', x, y)
-            elif level[y][x] == ',':
-                Tile('wall14', x, y)
-            elif level[y][x] == '<':
-                Tile('wall15', x, y)
-            elif level[y][x] == '@':
-                Tile('empty', x, y)
-                new_player = Player(3, 1, x, y)
-            elif level[y][x] == 'e':
-                Tile('empty', x, y)
-                new_enemy = Enemy(2, 1, x, y)
+            elif id == '@':
+                Player(3, 1, x, y)
+            elif id == 'e':
+                Enemy(2, 1, x, y)
                 Point(x, y)
-    return new_enemy, new_player, x, y
 
 
-enemy, player, level_x, level_y = generate_level(load_level('level3.txt'))
+generate_level(load_level('level3.txt'))
 
 
 def collision(points_group, player_group, cherry_group, enemy_group,
