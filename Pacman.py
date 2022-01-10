@@ -71,37 +71,22 @@ super_points_group = pygame.sprite.Group()
 
 
 class Border(pygame.sprite.Sprite):
-    def __init__(self, image, x):
+    def __init__(self, imagePath, x):
         super().__init__(all_sprites)
-        self.image = image
+        self.image = load_image(imagePath)
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.bottomleft = x
 
 
-imageL1 = load_image('map/borderL1.png')
-borderL1 = Border(imageL1, (0, 600))
-
-imageL2 = load_image('map/borderL2.png')
-borderL2 = Border(imageL2, (500, 600))
-
-imageR1 = load_image('map/borderR1.png')
-borderR1 = Border(imageR1, (0, 600))
-
-imageR2 = load_image('map/borderR2.png')
-borderR2 = Border(imageR2, (500, 600))
-
-imageU1 = load_image('map/borderU1.png')
-borderU1 = Border(imageU1, (0, 600))
-
-imageU2 = load_image('map/borderU2.png')
-borderU2 = Border(imageU2, (500, 600))
-
-imageD1 = load_image('map/borderD1.png')
-borderD1 = Border(imageD1, (0, 600))
-
-imageD2 = load_image('map/borderD2.png')
-borderD2 = Border(imageD2, (500, 600))
+borderL1 = Border('map/borderL1.png', (0, 600))
+borderL2 = Border('map/borderL2.png', (500, 600))
+borderR1 = Border('map/borderR1.png', (0, 600))
+borderR2 = Border('map/borderR2.png', (500, 600))
+borderU1 = Border('map/borderU1.png', (0, 600))
+borderU2 = Border('map/borderU2.png', (500, 600))
+borderD1 = Border('map/borderD1.png', (0, 600))
+borderD2 = Border('map/borderD2.png', (500, 600))
 
 
 class Cherry(pygame.sprite.Sprite):
