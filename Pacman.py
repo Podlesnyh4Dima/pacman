@@ -17,8 +17,10 @@ def draw(screen):
     global count
     pygame.font.init()
     font = pygame.font.Font(None, 50)
-    screen.blit(pygame.transform.scale(load_image('fon.png'), (1000, 50)),  (0, 600))
-    screen.blit(font.render('Счёт: ' + str(count), False, (255, 255, 255)), (0, 600))
+    screen.blit(pygame.transform.scale(
+        load_image('fon.png'), (1000, 50)),  (0, 600))
+    screen.blit(font.render('Счёт: ' + str(count),
+                False, (255, 255, 255)), (0, 600))
     screen.blit(font.render('Win', False, (255, 255, 255)), (400, 600))
     screen.blit(font.render('Game over', False, (255, 255, 255)), (750, 600))
 
@@ -90,9 +92,11 @@ class GameObj(pygame.sprite.Sprite):
     image = pygame.image.load('data/cherry.png')
     group = all_sprites
     d = (0, 0)
+
     def __init__(self, x_pos, y_pos):
         super().__init__(self.group, all_sprites)
-        self.rect = self.image.get_rect().move(x_pos * tile_width + self.d[0], y_pos * tile_height + self.d[1])
+        self.rect = self.image.get_rect().move(
+            x_pos * tile_width + self.d[0], y_pos * tile_height + self.d[1])
 
 
 class Cherry(GameObj):
@@ -115,6 +119,7 @@ class SuperPoint(GameObj):
 
 class Tile(GameObj):
     group = tiles_group
+
     def __init__(self, tile_type, x_pos, y_pos):
         self.image = tile_images[tile_type]
         super().__init__(x_pos, y_pos)
@@ -135,11 +140,13 @@ class Sprite(GameObj):
         super().__init__(x_pos, y_pos)
 
     def cut_sheet(self, sheet, columns, rows):
-        self.rect = pygame.Rect(0, 0, sheet.get_width() // columns, sheet.get_height() // rows)
+        self.rect = pygame.Rect(0, 0, sheet.get_width() //
+                                columns, sheet.get_height() // rows)
         for j in range(rows):
             for i in range(columns):
                 frame_location = (self.rect.w * i, self.rect.h * j)
-                self.frames.append(sheet.subsurface(pygame.Rect(frame_location, self.rect.size)))
+                self.frames.append(sheet.subsurface(
+                    pygame.Rect(frame_location, self.rect.size)))
 
     def update(self):
         self.rect.x += self.movement_x
@@ -247,12 +254,17 @@ def generate_level(level):
                 Point(x, y)
 
 
-def collision(points_group, player_group, cherry_group, enemy_group, super_points_group):
+def collision(points_group, player_group, cherry_group,
+              enemy_group, super_points_group):
     global count
-    collisions = pygame.sprite.groupcollide(player_group, points_group, False, True)
-    collisions_for_cherry = pygame.sprite.groupcollide(player_group, cherry_group, False, True)
-    super_point = pygame.sprite.groupcollide(player_group, super_points_group, False, True)
-    enemy_and_player = pygame.sprite.groupcollide(enemy_group, player_group, False, True)
+    collisions = pygame.sprite.groupcollide(
+        player_group, points_group, False, True)
+    collisions_for_cherry = pygame.sprite.groupcollide(
+        player_group, cherry_group, False, True)
+    super_point = pygame.sprite.groupcollide(
+        player_group, super_points_group, False, True)
+    enemy_and_player = pygame.sprite.groupcollide(
+        enemy_group, player_group, False, True)
     if collisions:
         count += 10
     if collisions_for_cherry:
@@ -283,7 +295,8 @@ while running:
     all_sprites.draw(screen)
     draw(screen)
     all_sprites.update()
-    collision(points_group, player_group, cherry_group, enemy_group, super_points_group)
+    collision(points_group, player_group, cherry_group,
+              enemy_group, super_points_group)
     clock.tick(FPS)
     pygame.display.flip()
 pygame.quit()
