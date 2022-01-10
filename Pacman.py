@@ -89,36 +89,38 @@ borderD1 = Border('map/borderD1.png', (0, 600))
 borderD2 = Border('map/borderD2.png', (500, 600))
 
 
-class Cherry(pygame.sprite.Sprite):
+class GameObj(pygame.sprite.Sprite):
+    image = pygame.image.load('data/cherry.png')
+    group = cherry_group
+    d = (0, 0)
     def __init__(self, x_pos, y_pos):
-        super().__init__(cherry_group, all_sprites)
-        self.image = pygame.image.load('data/cherry.png')
-        self.rect = self.image.get_rect().move(
-            x_pos * tile_width + 23, 23 + y_pos * tile_height)
+        super().__init__(self.group, all_sprites)
+        self.rect = self.image.get_rect().move(x_pos * tile_width + self.d[0], y_pos * tile_height + self.d[0])
 
 
-class Point(pygame.sprite.Sprite):
-    def __init__(self, x_pos, y_pos):
-        super().__init__(points_group, all_sprites)
-        self.image = pygame.image.load('data/point.png')
-        self.rect = self.image.get_rect().move(
-            x_pos * tile_width + 23, 23 + y_pos * tile_height)
+class Cherry(GameObj):
+    image = pygame.image.load('data/cherry.png')
+    group = cherry_group
+    d = (23, 23)
 
 
-class SuperPoint(pygame.sprite.Sprite):
-    def __init__(self, x_pos, y_pos):
-        super().__init__(super_points_group, all_sprites)
-        self.image = pygame.image.load('data/super_point.png')
-        self.rect = self.image.get_rect().move(
-            x_pos * tile_width + 23, 23 + y_pos * tile_height)
+class Point(GameObj):
+    image = pygame.image.load('data/point.png')
+    group = points_group
+    d = (23, 23)
 
 
-class Tile(pygame.sprite.Sprite):
+class SuperPoint(GameObj):
+    image = pygame.image.load('data/super_point.png')
+    group = super_points_group
+    d = (23, 23)
+
+
+class Tile(GameObj):
+    group = tiles_group
     def __init__(self, tile_type, x_pos, y_pos):
-        super().__init__(tiles_group, all_sprites)
         self.image = tile_images[tile_type]
-        self.rect = self.image.get_rect().move(
-            tile_width * x_pos, tile_height * y_pos)
+        super().__init__(x_pos, y_pos)
 
 
 class Player(pygame.sprite.Sprite):
