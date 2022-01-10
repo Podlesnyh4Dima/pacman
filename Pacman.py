@@ -1,7 +1,6 @@
 import pygame
 import os
 from pygame.locals import *
-import sys
 
 pygame.display.set_caption('Pacman')
 movement_x = movement_y = 0
@@ -19,14 +18,12 @@ def draw(screen):
     pygame.font.init()
     font = pygame.font.Font(None, 50)
     screen.blit(pygame.transform.scale(load_image('fon.png'), (1000, 50)),  (0, 600))
-    screen.blit(font.render('Счёт: ' + str(count), False,
-                            (255, 255, 255)), (0, 600))
-    screen.blit(font.render('Win', False,
-                            (255, 255, 255)), (400, 600))
+    screen.blit(font.render('Счёт: ' + str(count), False, (255, 255, 255)), (0, 600))
+    screen.blit(font.render('Win', False, (255, 255, 255)), (400, 600))
     screen.blit(font.render('Game over', False, (255, 255, 255)), (750, 600))
 
 
-def load_image(name, colorkey=None):
+def load_image(name):
     fullname = os.path.join('data', name)
     image = pygame.image.load(fullname).convert_alpha()
     return image
@@ -225,18 +222,8 @@ class Enemy(Sprite):
         super().__init__(x_pos, y_pos)
         self.movement_x = -v
 
-    def cut_sheet(self, sheet, columns, rows):
-        self.rect = pygame.Rect(0, 0, sheet.get_width() // columns,
-                                sheet.get_height() // rows)
-        for j in range(rows):
-            for i in range(columns):
-                frame_location = (self.rect.w * i, self.rect.h * j)
-                self.frames.append(sheet.subsurface(pygame.Rect(
-                    frame_location,  self.rect.size)))
-
     def update(self):
         super().update()
-
 
 
 def generate_level(level):
@@ -260,20 +247,12 @@ def generate_level(level):
                 Point(x, y)
 
 
-generate_level(load_level('level3.txt'))
-
-
-def collision(points_group, player_group, cherry_group, enemy_group,
-              super_points_group):
+def collision(points_group, player_group, cherry_group, enemy_group, super_points_group):
     global count
-    collisions = pygame.sprite.groupcollide(player_group, points_group,
-                                            False, True)
-    collisions_for_cherry = pygame.sprite.groupcollide(
-        player_group, cherry_group, False, True)
-    super_point = pygame.sprite.groupcollide(player_group, super_points_group,
-                                             False, True)
-    enemy_and_player = pygame.sprite.groupcollide(enemy_group, player_group,
-                                                  False, True)
+    collisions = pygame.sprite.groupcollide(player_group, points_group, False, True)
+    collisions_for_cherry = pygame.sprite.groupcollide(player_group, cherry_group, False, True)
+    super_point = pygame.sprite.groupcollide(player_group, super_points_group, False, True)
+    enemy_and_player = pygame.sprite.groupcollide(enemy_group, player_group, False, True)
     if collisions:
         count += 10
     if collisions_for_cherry:
@@ -295,6 +274,7 @@ def collision(points_group, player_group, cherry_group, enemy_group,
         screen.blit(font.render('Win', False, (0, 255, 0)), (400, 600))
 
 
+generate_level(load_level('level3.txt'))
 running = True
 while running:
     for event in pygame.event.get():
@@ -303,8 +283,7 @@ while running:
     all_sprites.draw(screen)
     draw(screen)
     all_sprites.update()
-    collision(points_group, player_group, cherry_group, enemy_group,
-              super_points_group)
+    collision(points_group, player_group, cherry_group, enemy_group, super_points_group)
     clock.tick(FPS)
     pygame.display.flip()
 pygame.quit()
