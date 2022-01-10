@@ -91,7 +91,7 @@ borderD2 = Border('map/borderD2.png', (500, 600))
 
 class GameObj(pygame.sprite.Sprite):
     image = pygame.image.load('data/cherry.png')
-    group = cherry_group
+    group = all_sprites
     d = (0, 0)
     def __init__(self, x_pos, y_pos):
         super().__init__(self.group, all_sprites)
@@ -101,7 +101,7 @@ class GameObj(pygame.sprite.Sprite):
 class Cherry(GameObj):
     image = pygame.image.load('data/cherry.png')
     group = cherry_group
-    d = (23, 23)
+    d = (15, 15)
 
 
 class Point(GameObj):
@@ -113,7 +113,7 @@ class Point(GameObj):
 class SuperPoint(GameObj):
     image = pygame.image.load('data/super_point.png')
     group = super_points_group
-    d = (23, 23)
+    d = (15, 15)
 
 
 class Tile(GameObj):
