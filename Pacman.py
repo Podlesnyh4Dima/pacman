@@ -18,7 +18,8 @@ def draw(screen):
     global count
     pygame.font.init()
     font = pygame.font.Font(None, 50)
-    screen.blit(pygame.transform.scale(load_image('fon.png'), (1000, 50)),  (0, 600))
+    screen.blit(pygame.transform.scale(
+        load_image('fon.png'), (1000, 50)),  (0, 600))
     screen.blit(font.render('Счёт: ' + str(count), False,
                             (255, 255, 255)), (0, 600))
     screen.blit(font.render('Win', False,
@@ -169,7 +170,8 @@ class Player(pygame.sprite.Sprite):
         self.rect.x += self.movement_x
         self.rect.y += self.movement_y
 
-        collide = pygame.sprite.groupcollide(player_group, borders_group, False, False)
+        collide = pygame.sprite.groupcollide(
+            player_group, borders_group, False, False)
         if collide and self in collide:
             self.movement_x = 0
             self.movement_y = 0
@@ -233,7 +235,8 @@ class Enemy(pygame.sprite.Sprite):
         self.rect.x += self.movement_x
         self.rect.y += self.movement_y
 
-        collide = pygame.sprite.groupcollide(enemy_group, borders_group, False, False)
+        collide = pygame.sprite.groupcollide(
+            enemy_group, borders_group, False, False)
         if collide and self in collide:
             self.movement_x = 0
             self.movement_y = 0
@@ -271,7 +274,6 @@ class Enemy(pygame.sprite.Sprite):
             self.image = pygame.transform.rotate(self.image, 90)
         if self.lookD == "down":
             self.image = pygame.transform.rotate(self.image, -90)
-
 
 
 def generate_level(level):
