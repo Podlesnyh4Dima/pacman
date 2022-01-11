@@ -7,11 +7,13 @@ pygame.display.set_caption('Pacman')
 movement_x = movement_y = 0
 FPS = 10
 clock = pygame.time.Clock()
+ve = 5
 v = 5
 count = 0
 tile_width = tile_height = 50
 size = width, height = 1000, 650
 screen = pygame.display.set_mode(size)
+color = (255, 255, 255)
 
 
 def draw(screen):
@@ -24,7 +26,7 @@ def draw(screen):
                             (255, 255, 255)), (0, 600))
     screen.blit(font.render('Win', False,
                             (255, 255, 255)), (400, 600))
-    screen.blit(font.render('Game over', False, (255, 255, 255)), (750, 600))
+    screen.blit(font.render('Game over', False, color), (750, 600))
 
 
 def load_image(name, colorkey=None):
@@ -63,10 +65,10 @@ tile_images = {
 }
 
 all_sprites = pygame.sprite.Group()
+enemy_group = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
 points_group = pygame.sprite.Group()
-enemy_group = pygame.sprite.Group()
 cherry_group = pygame.sprite.Group()
 super_points_group = pygame.sprite.Group()
 borders_group = pygame.sprite.Group()
@@ -82,13 +84,13 @@ class Border(pygame.sprite.Sprite):
     def create(x, y, top, right, bottom, left):
         x *= tile_width
         y *= tile_height
-        if (top):
+        if top:
             Border(x, y, tile_width, 2)
-        if (bottom):
+        if bottom:
             Border(x, y + tile_height - 2, tile_width, 2)
-        if (left):
+        if left:
             Border(x, y, 2, tile_height)
-        if (right):
+        if right:
             Border(x + tile_width - 2, y, 2, tile_height)
 
 
@@ -116,9 +118,78 @@ class SuperPoint(pygame.sprite.Sprite):
             x_pos * tile_width + 23, 23 + y_pos * tile_height)
 
 
+class Enemy(pygame.sprite.Sprite):
+    image = load_image("red_ghost.png")
+
+    def __init__(self, columns, rows, x_pos, y_pos):
+        super().__init__(all_sprites, enemy_group)
+        self.movement_x = -v
+        self.movement_y = 0
+        self.frames = []
+        self.cut_sheet(Enemy.image, columns, rows)
+        self.cur_frame = 0
+        self.image = self.frames[self.cur_frame]
+        self.rect = self.image.get_rect().move(
+            tile_width * x_pos + 25, tile_height * y_pos + 5)
+        self.lookD = "left"
+
+    def cut_sheet(self, sheet, columns, rows):
+        self.rect = pygame.Rect(0, 0, sheet.get_width() // columns,
+                                sheet.get_height() // rows)
+        for j in range(rows):
+            for i in range(columns):
+                frame_location = (self.rect.w * i, self.rect.h * j)
+                self.frames.append(sheet.subsurface(pygame.Rect(
+                    frame_location,  self.rect.size)))
+
+    def update(self):
+        self.rect.x += self.movement_x
+        self.rect.y += self.movement_y
+
+        collide = pygame.sprite.groupcollide(
+            enemy_group, borders_group, False, False)
+        if collide and self in collide:
+            self.movement_x = 0
+            self.movement_y = 0
+            for border in collide[self]:
+                if (border.type == "hor"):
+                    if (self.rect.centery > border.rect.centery):
+                        self.rect.y = border.rect.bottom
+                        self.movement_x = ve
+                    else:
+                        self.rect.y = border.rect.y - self.rect.height
+                        self.movement_x = -ve
+                else:
+                    self.rect.right
+                    if self.rect.centerx > border.rect.centerx:
+                        self.rect.x = border.rect.right
+                        self.movement_y = -ve
+                    else:
+                        self.rect.x = border.rect.x - self.rect.width
+                        self.movement_y = ve
+
+        if int(self.rect.x) >= width:
+            self.rect.x = 0
+        elif int(self.rect.x) < 0:
+            self.rect.x = width
+        if int(self.rect.y) >= height:
+            self.rect.y = 0
+        elif int(self.rect.y) < 0:
+            self.rect.y = height
+
+        self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+        self.image = self.frames[self.cur_frame]
+        if self.lookD == "left":
+            self.image = pygame.transform.flip(self.image, True, False)
+        if self.lookD == "up":
+            self.image = pygame.transform.rotate(self.image, 90)
+        if self.lookD == "down":
+            self.image = pygame.transform.rotate(self.image, -90)
+
+
 class Tile(pygame.sprite.Sprite):
     def __init__(self, tile_type, x_pos, y_pos):
-        super().__init__(tiles_group, all_sprites)
+        super().__init__(tiles_group)
         self.image = tile_images[tile_type]
         self.rect = self.image.get_rect().move(
             tile_width * x_pos, tile_height * y_pos)
@@ -207,80 +278,15 @@ class Player(pygame.sprite.Sprite):
             self.image = pygame.transform.rotate(self.image, -90)
 
 
-class Enemy(pygame.sprite.Sprite):
-    image = load_image("red_ghost.png")
-
-    def __init__(self, columns, rows, x_pos, y_pos):
-        super().__init__(all_sprites, enemy_group)
-        self.movement_x = -v
-        self.movement_y = 0
-        self.frames = []
-        self.cut_sheet(Enemy.image, columns, rows)
-        self.cur_frame = 0
-        self.image = self.frames[self.cur_frame]
-        self.rect = self.image.get_rect().move(
-            tile_width * x_pos + 25, tile_height * y_pos + 5)
-        self.lookD = "left"
-
-    def cut_sheet(self, sheet, columns, rows):
-        self.rect = pygame.Rect(0, 0, sheet.get_width() // columns,
-                                sheet.get_height() // rows)
-        for j in range(rows):
-            for i in range(columns):
-                frame_location = (self.rect.w * i, self.rect.h * j)
-                self.frames.append(sheet.subsurface(pygame.Rect(
-                    frame_location,  self.rect.size)))
-
-    def update(self):
-        self.rect.x += self.movement_x
-        self.rect.y += self.movement_y
-
-        collide = pygame.sprite.groupcollide(
-            enemy_group, borders_group, False, False)
-        if collide and self in collide:
-            self.movement_x = 0
-            self.movement_y = 0
-            for border in collide[self]:
-                if (border.type == "hor"):
-                    if (self.rect.centery > border.rect.centery):
-                        self.rect.y = border.rect.bottom
-                        self.movement_x = v
-                    else:
-                        self.rect.y = border.rect.y - self.rect.height
-                        self.movement_x = -v
-                else:
-                    self.rect.right
-                    if (self.rect.centerx > border.rect.centerx):
-                        self.rect.x = border.rect.right
-                        self.movement_y = -v
-                    else:
-                        self.rect.x = border.rect.x - self.rect.width
-                        self.movement_y = v
-
-        if int(self.rect.x) >= width:
-            self.rect.x = 0
-        elif int(self.rect.x) < 0:
-            self.rect.x = width
-        if int(self.rect.y) >= height:
-            self.rect.y = 0
-        elif int(self.rect.y) < 0:
-            self.rect.y = height
-
-        self.cur_frame = (self.cur_frame + 1) % len(self.frames)
-        self.image = self.frames[self.cur_frame]
-        if self.lookD == "left":
-            self.image = pygame.transform.flip(self.image, True, False)
-        if self.lookD == "up":
-            self.image = pygame.transform.rotate(self.image, 90)
-        if self.lookD == "down":
-            self.image = pygame.transform.rotate(self.image, -90)
-
-
 def generate_level(level):
     new_enemy, new_player, x, y = None, None, None, None
     for y in range(len(level)):
         for x in range(len(level[y])):
-            if level[y][x] == '.':
+            if level[y][x] == 'e':
+                Tile('empty', x, y)
+                Point(x, y)
+                new_enemy = Enemy(2, 1, x, y)
+            elif level[y][x] == '.':
                 Tile('empty', x, y)
                 Point(x, y)
             elif level[y][x] == 'c':
@@ -339,19 +345,18 @@ def generate_level(level):
             elif level[y][x] == '@':
                 Tile('empty', x, y)
                 new_player = Player(3, 1, x, y)
-            elif level[y][x] == 'e':
-                Tile('empty', x, y)
-                new_enemy = Enemy(2, 1, x, y)
-                Point(x, y)
-    return new_enemy, new_player, x, y
+    return new_player, x, y, new_enemy
 
 
-enemy, player, level_x, level_y = generate_level(load_level('level3.txt'))
+enemy, player, level_x, level_y = generate_level(load_level('level2.txt'))
 
 
 def collision(points_group, player_group, cherry_group, enemy_group,
               super_points_group):
     global count
+    global ve
+    global v
+    global color
     collisions = pygame.sprite.groupcollide(player_group, points_group,
                                             False, True)
     collisions_for_cherry = pygame.sprite.groupcollide(
@@ -370,12 +375,14 @@ def collision(points_group, player_group, cherry_group, enemy_group,
     if enemy_and_player:
         pygame.font.init()
         font = pygame.font.SysFont('Comic Sans MS', 30)
+        color = (255, 0, 0)
         screen.blit(font.render('Game over', False, (255, 0, 0)), (750, 600))
-    if count >= 1510 and count < 3030:
+    if count == 1510:
         generate_level(load_level('level2.txt'))
-    elif count >= 3030 and count < 4450:
+        ve += 5
+    elif count == 3030:
         generate_level(load_level('level3.txt'))
-    elif count >= 4450:
+    elif count == 4450:
         pygame.font.init()
         font = pygame.font.Font(None, 50)
         screen.blit(font.render('Win', False, (0, 255, 0)), (400, 600))
@@ -386,6 +393,7 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+    tiles_group.draw(screen)
     all_sprites.draw(screen)
     draw(screen)
     all_sprites.update()
