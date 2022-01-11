@@ -99,7 +99,7 @@ class GameObj(pygame.sprite.Sprite):
     def __init__(self, x_pos, y_pos):
         super().__init__(self.group, all_sprites)
         self.rect = self.image.get_rect().move(
-            x_pos * tile_width + self.d[0], y_pos * tile_height + self.d[0])
+            x_pos * tile_width + self.d[0], y_pos * tile_height + self.d[1])
 
 
 class Cherry(GameObj):
@@ -127,104 +127,19 @@ class Tile(GameObj):
         super().__init__(x_pos, y_pos)
 
 
-
-class Player(pygame.sprite.Sprite):
+class Sprite(GameObj):
     image = player_image
+    columns, rows = 1, 1
 
-    def __init__(self, columns, rows, x_pos, y_pos):
-        super().__init__(all_sprites, player_group)
-        self.movement_x = movement_x
-        self.movement_y = movement_y
-        self.frames = []
-        self.cut_sheet(Player.image, columns, rows)
-        self.cur_frame = 0
-        self.image = self.frames[self.cur_frame]
-        self.rect = self.image.get_rect().move(
-            tile_width * x_pos + 15, tile_height * y_pos + 5)
-        self.lookD = "right"
-
-    def cut_sheet(self, sheet, columns, rows):
-        self.rect = pygame.Rect(0, 0, sheet.get_width() // columns,
-                                sheet.get_height() // rows)
-        for j in range(rows):
-            for i in range(columns):
-                frame_location = (self.rect.w * i, self.rect.h * j)
-                self.frames.append(sheet.subsurface(pygame.Rect(frame_location,
-                                                    self.rect.size)))
-
-    def update(self):
-        if event.type == KEYDOWN:
-            if event.key == K_RIGHT:
-                self.movement_x = v
-                self.movement_y = 0
-                self.lookD = "right"
-            if event.key == K_LEFT:
-                self.movement_x = -v
-                self.movement_y = 0
-                self.lookD = "left"
-            if event.key == K_DOWN:
-                self.movement_y = v
-                self.movement_x = 0
-                self.lookD = "down"
-            if event.key == K_UP:
-                self.movement_y = -v
-                self.movement_x = 0
-                self.lookD = "up"
-
-        self.rect.x += self.movement_x
-        self.rect.y += self.movement_y
-
-        collide = pygame.sprite.groupcollide(
-            player_group, borders_group, False, False)
-        if collide and self in collide:
-            self.movement_x = 0
-            self.movement_y = 0
-            for border in collide[self]:
-                if (border.type == "hor"):
-                    if (self.rect.centery > border.rect.centery):
-                        self.rect.y = border.rect.bottom
-                    else:
-                        self.rect.y = border.rect.y - self.rect.height
-                else:
-                    self.rect.right
-                    if (self.rect.centerx > border.rect.centerx):
-                        self.rect.x = border.rect.right
-                    else:
-                        self.rect.x = border.rect.x - self.rect.width
-
-        if int(self.rect.x) >= width:
-            self.rect.x = 0
-        elif int(self.rect.x) < 0:
-            self.rect.x = width
-        if int(self.rect.y) >= height:
-            self.rect.y = 0
-        elif int(self.rect.y) < 0:
-            self.rect.y = height
-
-        self.cur_frame = (self.cur_frame + 1) % len(self.frames)
-        self.image = self.frames[self.cur_frame]
-        if (self.lookD == "left"):
-            self.image = pygame.transform.flip(self.image, True, False)
-        if (self.lookD == "up"):
-            self.image = pygame.transform.rotate(self.image, 90)
-        if (self.lookD == "down"):
-            self.image = pygame.transform.rotate(self.image, -90)
-
-
-class Enemy(pygame.sprite.Sprite):
-    image = load_image("red_ghost.png")
-
-    def __init__(self, columns, rows, x_pos, y_pos):
-        super().__init__(all_sprites, enemy_group)
-        self.movement_x = -v
+    def __init__(self, x_pos, y_pos):
+        self.movement_x = 0
         self.movement_y = 0
         self.frames = []
-        self.cut_sheet(Enemy.image, columns, rows)
+        self.cut_sheet(self.image, self.columns, self.rows)
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
-        self.rect = self.image.get_rect().move(
-            tile_width * x_pos + 25, tile_height * y_pos + 5)
-        self.lookD = "left"
+        self.lookD = "right"
+        super().__init__(x_pos, y_pos)
 
     def cut_sheet(self, sheet, columns, rows):
         self.rect = pygame.Rect(0, 0, sheet.get_width() // columns,
@@ -232,15 +147,15 @@ class Enemy(pygame.sprite.Sprite):
         for j in range(rows):
             for i in range(columns):
                 frame_location = (self.rect.w * i, self.rect.h * j)
-                self.frames.append(sheet.subsurface(pygame.Rect(
-                    frame_location,  self.rect.size)))
+                self.frames.append(sheet.subsurface(pygame.Rect(frame_location, self.rect.size)))
 
     def update(self):
         self.rect.x += self.movement_x
         self.rect.y += self.movement_y
 
+        collisions = []
         collide = pygame.sprite.groupcollide(
-            enemy_group, borders_group, False, False)
+            self.group, borders_group, False, False)
         if collide and self in collide:
             self.movement_x = 0
             self.movement_y = 0
@@ -248,18 +163,18 @@ class Enemy(pygame.sprite.Sprite):
                 if (border.type == "hor"):
                     if (self.rect.centery > border.rect.centery):
                         self.rect.y = border.rect.bottom
-                        self.movement_x = v
+                        collisions.append("top")
                     else:
                         self.rect.y = border.rect.y - self.rect.height
-                        self.movement_x = -v
+                        collisions.append("bottom")
                 else:
                     self.rect.right
                     if (self.rect.centerx > border.rect.centerx):
                         self.rect.x = border.rect.right
-                        self.movement_y = -v
+                        collisions.append("left")
                     else:
                         self.rect.x = border.rect.x - self.rect.width
-                        self.movement_y = v
+                        collisions.append("right")
 
         if int(self.rect.x) >= width:
             self.rect.x = 0
@@ -279,6 +194,62 @@ class Enemy(pygame.sprite.Sprite):
         if self.lookD == "down":
             self.image = pygame.transform.rotate(self.image, -90)
 
+        return collisions
+
+
+class Player(Sprite):
+    image = player_image
+    group = player_group
+    columns, rows = 3, 1
+    d = (15, 5)
+
+    def update(self):
+        if event.type == KEYDOWN:
+            if event.key == K_RIGHT:
+                self.movement_x = v
+                self.movement_y = 0
+                self.lookD = "right"
+            if event.key == K_LEFT:
+                self.movement_x = -v
+                self.movement_y = 0
+                self.lookD = "left"
+            if event.key == K_DOWN:
+                self.movement_y = v
+                self.movement_x = 0
+                self.lookD = "down"
+            if event.key == K_UP:
+                self.movement_y = -v
+                self.movement_x = 0
+                self.lookD = "up"
+        return super().update()
+
+
+class Enemy(Sprite):
+    image = load_image("red_ghost.png")
+    group = enemy_group
+    columns, rows = 2, 1
+    d = (25, 5)
+
+    def __init__(self, x_pos, y_pos):
+        super().__init__(x_pos, y_pos)
+        self.movement_x = -v
+
+    def update(self):
+        collisions = super().update()
+        if (len(collisions) == 0):
+            return
+        self.movement_x = 0
+        self.movement_y = 0
+        for collision in collisions:
+            if (collision == "top"):
+                self.movement_x = v
+            elif (collision == "bottom"):
+                self.movement_x = -v
+            elif (collision == "left"):
+                self.movement_y = -v
+            elif (collision == "right"):
+                self.movement_y = v
+
 
 def generate_level(level):
     for y in range(len(level)):
@@ -296,9 +267,9 @@ def generate_level(level):
             elif id == 's':
                 SuperPoint(x, y)
             elif id == '@':
-                Player(3, 1, x, y)
+                Player(x, y)
             elif id == 'e':
-                Enemy(2, 1, x, y)
+                Enemy(x, y)
                 Point(x, y)
 
 
