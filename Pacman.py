@@ -18,7 +18,8 @@ def draw(screen):
     global count
     pygame.font.init()
     font = pygame.font.Font(None, 50)
-    screen.blit(pygame.transform.scale(load_image('fon.png'), (1000, 50)),  (0, 600))
+    screen.blit(pygame.transform.scale(
+        load_image('fon.png'), (1000, 50)),  (0, 600))
     screen.blit(font.render('Счёт: ' + str(count), False,
                             (255, 255, 255)), (0, 600))
     screen.blit(font.render('Win', False,
@@ -68,40 +69,27 @@ points_group = pygame.sprite.Group()
 enemy_group = pygame.sprite.Group()
 cherry_group = pygame.sprite.Group()
 super_points_group = pygame.sprite.Group()
+borders_group = pygame.sprite.Group()
 
 
 class Border(pygame.sprite.Sprite):
-    def __init__(self, image, x):
-        super().__init__(all_sprites)
-        self.image = image
-        self.rect = self.image.get_rect()
-        self.mask = pygame.mask.from_surface(self.image)
-        self.rect.bottomleft = x
+    def __init__(self, x, y, w, h):
+        super().__init__(borders_group)
+        self.rect = pygame.Rect(x, y, w, h)
+        self.type = "hor" if w > h else "ver"
 
-
-imageL1 = load_image('map/borderL1.png')
-borderL1 = Border(imageL1, (0, 600))
-
-imageL2 = load_image('map/borderL2.png')
-borderL2 = Border(imageL2, (500, 600))
-
-imageR1 = load_image('map/borderR1.png')
-borderR1 = Border(imageR1, (0, 600))
-
-imageR2 = load_image('map/borderR2.png')
-borderR2 = Border(imageR2, (500, 600))
-
-imageU1 = load_image('map/borderU1.png')
-borderU1 = Border(imageU1, (0, 600))
-
-imageU2 = load_image('map/borderU2.png')
-borderU2 = Border(imageU2, (500, 600))
-
-imageD1 = load_image('map/borderD1.png')
-borderD1 = Border(imageD1, (0, 600))
-
-imageD2 = load_image('map/borderD2.png')
-borderD2 = Border(imageD2, (500, 600))
+    @staticmethod
+    def create(x, y, top, right, bottom, left):
+        x *= tile_width
+        y *= tile_height
+        if (top):
+            Border(x, y, tile_width, 2)
+        if (bottom):
+            Border(x, y + tile_height - 2, tile_width, 2)
+        if (left):
+            Border(x, y, 2, tile_height)
+        if (right):
+            Border(x + tile_width - 2, y, 2, tile_height)
 
 
 class Cherry(pygame.sprite.Sprite):
@@ -162,27 +150,19 @@ class Player(pygame.sprite.Sprite):
 
     def update(self):
         if event.type == KEYDOWN:
-            if event.key == K_RIGHT \
-                    and not pygame.sprite.collide_mask(self, borderR1) \
-                    and not pygame.sprite.collide_mask(self, borderR2):
+            if event.key == K_RIGHT:
                 self.movement_x = v
                 self.movement_y = 0
                 self.lookD = "right"
-            if event.key == K_LEFT \
-                    and not pygame.sprite.collide_mask(self, borderL1) \
-                    and not pygame.sprite.collide_mask(self, borderL2):
+            if event.key == K_LEFT:
                 self.movement_x = -v
                 self.movement_y = 0
                 self.lookD = "left"
-            if event.key == K_DOWN \
-                    and not pygame.sprite.collide_mask(self, borderD1) \
-                    and not pygame.sprite.collide_mask(self, borderD2):
+            if event.key == K_DOWN:
                 self.movement_y = v
                 self.movement_x = 0
                 self.lookD = "down"
-            if event.key == K_UP \
-                    and not pygame.sprite.collide_mask(self, borderU1) \
-                    and not pygame.sprite.collide_mask(self, borderU2):
+            if event.key == K_UP:
                 self.movement_y = -v
                 self.movement_x = 0
                 self.lookD = "up"
@@ -190,18 +170,23 @@ class Player(pygame.sprite.Sprite):
         self.rect.x += self.movement_x
         self.rect.y += self.movement_y
 
-        if pygame.sprite.collide_mask(self, borderL1) \
-                or pygame.sprite.collide_mask(self, borderL2):
-            self.rect.x += v
-        if pygame.sprite.collide_mask(self, borderR1) \
-                or pygame.sprite.collide_mask(self, borderR2):
-            self.rect.x += -v
-        if pygame.sprite.collide_mask(self, borderD1) \
-                or pygame.sprite.collide_mask(self, borderD2):
-            self.rect.y += -v
-        if pygame.sprite.collide_mask(self, borderU1) \
-                or pygame.sprite.collide_mask(self, borderU2):
-            self.rect.y += v
+        collide = pygame.sprite.groupcollide(
+            player_group, borders_group, False, False)
+        if collide and self in collide:
+            self.movement_x = 0
+            self.movement_y = 0
+            for border in collide[self]:
+                if (border.type == "hor"):
+                    if (self.rect.centery > border.rect.centery):
+                        self.rect.y = border.rect.bottom
+                    else:
+                        self.rect.y = border.rect.y - self.rect.height
+                else:
+                    self.rect.right
+                    if (self.rect.centerx > border.rect.centerx):
+                        self.rect.x = border.rect.right
+                    else:
+                        self.rect.x = border.rect.x - self.rect.width
 
         if int(self.rect.x) >= width:
             self.rect.x = 0
@@ -227,8 +212,8 @@ class Enemy(pygame.sprite.Sprite):
 
     def __init__(self, columns, rows, x_pos, y_pos):
         super().__init__(all_sprites, enemy_group)
-        self.movement_x = movement_x
-        self.movement_y = movement_y
+        self.movement_x = -v
+        self.movement_y = 0
         self.frames = []
         self.cut_sheet(Enemy.image, columns, rows)
         self.cur_frame = 0
@@ -247,37 +232,30 @@ class Enemy(pygame.sprite.Sprite):
                     frame_location,  self.rect.size)))
 
     def update(self):
-        self.rect.x += -v
         self.rect.x += self.movement_x
         self.rect.y += self.movement_y
 
-        if pygame.sprite.collide_mask(self, borderL1):
-            self.rect.x += v
-            self.rect.y += v * 1.5
-            self.lookD = "up"
-        if pygame.sprite.collide_mask(self, borderL2):
-            self.rect.x += v
-            self.rect.y += v
-            self.lookD = "up"
-        if pygame.sprite.collide_mask(self, borderR1):
-            self.rect.x += v
-            self.rect.y += v
-            self.lookD = "down"
-        if pygame.sprite.collide_mask(self, borderR2):
-            self.rect.x += v
-            self.rect.y += v
-            self.lookD = "down"
-        if pygame.sprite.collide_mask(self, borderD1) \
-                or pygame.sprite.collide_mask(self, borderD2):
-            self.rect.y += -v
-            self.rect.x += v
-            self.lookD = "left"
-        if pygame.sprite.collide_mask(self, borderU2):
-            self.rect.x += v * 1.5
-            self.lookD = "right"
-        if pygame.sprite.collide_mask(self, borderU1):
-            self.rect.x += v + 4
-            self.lookD = "right"
+        collide = pygame.sprite.groupcollide(
+            enemy_group, borders_group, False, False)
+        if collide and self in collide:
+            self.movement_x = 0
+            self.movement_y = 0
+            for border in collide[self]:
+                if (border.type == "hor"):
+                    if (self.rect.centery > border.rect.centery):
+                        self.rect.y = border.rect.bottom
+                        self.movement_x = v
+                    else:
+                        self.rect.y = border.rect.y - self.rect.height
+                        self.movement_x = -v
+                else:
+                    self.rect.right
+                    if (self.rect.centerx > border.rect.centerx):
+                        self.rect.x = border.rect.right
+                        self.movement_y = -v
+                    else:
+                        self.rect.x = border.rect.x - self.rect.width
+                        self.movement_y = v
 
         if int(self.rect.x) >= width:
             self.rect.x = 0
@@ -298,7 +276,6 @@ class Enemy(pygame.sprite.Sprite):
             self.image = pygame.transform.rotate(self.image, -90)
 
 
-
 def generate_level(level):
     new_enemy, new_player, x, y = None, None, None, None
     for y in range(len(level)):
@@ -316,34 +293,49 @@ def generate_level(level):
                 Tile('empty', x, y)
             elif level[y][x] == '#':
                 Tile('wall', x, y)
+                Border.create(x, y, True, True, True, True)
             elif level[y][x] == '$':
                 Tile('wall2', x, y)
+                Border.create(x, y, False, True, False, True)
             elif level[y][x] == '!':
                 Tile('wall3', x, y)
+                Border.create(x, y, True, False, True, False)
             elif level[y][x] == '%':
                 Tile('wall4', x, y)
+                Border.create(x, y, False, False, True, True)
             elif level[y][x] == '^':
                 Tile('wall5', x, y)
+                Border.create(x, y, True, False, False, True)
             elif level[y][x] == '&':
                 Tile('wall6', x, y)
+                Border.create(x, y, True, True, False, False)
             elif level[y][x] == '*':
                 Tile('wall7', x, y)
+                Border.create(x, y, False, True, True, False)
             elif level[y][x] == '`':
                 Tile('wall8', x, y)
+                Border.create(x, y, True, False, True, True)
             elif level[y][x] == '~':
                 Tile('wall9', x, y)
+                Border.create(x, y, True, True, False, True)
             elif level[y][x] == '/':
                 Tile('wall10', x, y)
+                Border.create(x, y, True, True, True, False)
             elif level[y][x] == '?':
                 Tile('wall11', x, y)
+                Border.create(x, y, False, True, True, True)
             elif level[y][x] == '|':
                 Tile('wall12', x, y)
+                Border.create(x, y, False, False, False, True)
             elif level[y][x] == '>':
                 Tile('wall13', x, y)
+                Border.create(x, y, True, False, False, False)
             elif level[y][x] == ',':
                 Tile('wall14', x, y)
+                Border.create(x, y, False, True, False, False)
             elif level[y][x] == '<':
                 Tile('wall15', x, y)
+                Border.create(x, y, False, False, True, False)
             elif level[y][x] == '@':
                 Tile('empty', x, y)
                 new_player = Player(3, 1, x, y)
