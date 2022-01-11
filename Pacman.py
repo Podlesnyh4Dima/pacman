@@ -1,10 +1,8 @@
 import pygame
 import os
 from pygame.locals import *
-import sys
 
 pygame.display.set_caption('Pacman')
-movement_x = movement_y = 0
 FPS = 10
 clock = pygame.time.Clock()
 v = 5
@@ -27,7 +25,7 @@ def draw(screen):
     screen.blit(font.render('Game over', False, (255, 255, 255)), (750, 600))
 
 
-def load_image(name, colorkey=None):
+def load_image(name):
     fullname = os.path.join('data', name)
     image = pygame.image.load(fullname).convert_alpha()
     return image
@@ -96,6 +94,7 @@ class GameObj(pygame.sprite.Sprite):
     image = pygame.image.load('data/cherry.png')
     group = all_sprites
     d = (0, 0)
+
     def __init__(self, x_pos, y_pos):
         super().__init__(self.group, all_sprites)
         self.rect = self.image.get_rect().move(
@@ -122,6 +121,7 @@ class SuperPoint(GameObj):
 
 class Tile(GameObj):
     group = tiles_group
+
     def __init__(self, tile_type, x_pos, y_pos):
         self.image = tile_images[tile_type][0]
         super().__init__(x_pos, y_pos)
@@ -147,7 +147,8 @@ class Sprite(GameObj):
         for j in range(rows):
             for i in range(columns):
                 frame_location = (self.rect.w * i, self.rect.h * j)
-                self.frames.append(sheet.subsurface(pygame.Rect(frame_location, self.rect.size)))
+                self.frames.append(sheet.subsurface(
+                    pygame.Rect(frame_location, self.rect.size)))
 
     def update(self):
         self.rect.x += self.movement_x
@@ -273,9 +274,6 @@ def generate_level(level):
                 Point(x, y)
 
 
-generate_level(load_level('level3.txt'))
-
-
 def collision(points_group, player_group, cherry_group, enemy_group,
               super_points_group):
     global count
@@ -308,6 +306,7 @@ def collision(points_group, player_group, cherry_group, enemy_group,
         screen.blit(font.render('Win', False, (0, 255, 0)), (400, 600))
 
 
+generate_level(load_level('level3.txt'))
 running = True
 while running:
     for event in pygame.event.get():
