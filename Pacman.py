@@ -5,11 +5,13 @@ from pygame.locals import *
 pygame.display.set_caption('Pacman')
 FPS = 10
 clock = pygame.time.Clock()
+ve = 5
 v = 5
 count = 0
 tile_width = tile_height = 50
 size = width, height = 1000, 650
 screen = pygame.display.set_mode(size)
+color = (255, 255, 255)
 
 
 def draw(screen):
@@ -22,7 +24,7 @@ def draw(screen):
                             (255, 255, 255)), (0, 600))
     screen.blit(font.render('Win', False,
                             (255, 255, 255)), (400, 600))
-    screen.blit(font.render('Game over', False, (255, 255, 255)), (750, 600))
+    screen.blit(font.render('Game over', False, color), (750, 600))
 
 
 def load_image(name):
@@ -61,10 +63,10 @@ tile_images = {
 }
 
 all_sprites = pygame.sprite.Group()
+enemy_group = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
 points_group = pygame.sprite.Group()
-enemy_group = pygame.sprite.Group()
 cherry_group = pygame.sprite.Group()
 super_points_group = pygame.sprite.Group()
 borders_group = pygame.sprite.Group()
@@ -80,13 +82,13 @@ class Border(pygame.sprite.Sprite):
     def create(x, y, top, right, bottom, left):
         x *= tile_width
         y *= tile_height
-        if (top):
+        if top:
             Border(x, y, tile_width, 2)
-        if (bottom):
+        if bottom:
             Border(x, y + tile_height - 2, tile_width, 2)
-        if (left):
+        if left:
             Border(x, y, 2, tile_height)
-        if (right):
+        if right:
             Border(x + tile_width - 2, y, 2, tile_height)
 
 
@@ -170,7 +172,7 @@ class Sprite(GameObj):
                         collisions.append("bottom")
                 else:
                     self.rect.right
-                    if (self.rect.centerx > border.rect.centerx):
+                    if self.rect.centerx > border.rect.centerx:
                         self.rect.x = border.rect.right
                         collisions.append("left")
                     else:
@@ -243,13 +245,13 @@ class Enemy(Sprite):
         self.movement_y = 0
         for collision in collisions:
             if (collision == "top"):
-                self.movement_x = v
+                self.movement_x = ve
             elif (collision == "bottom"):
-                self.movement_x = -v
+                self.movement_x = -ve
             elif (collision == "left"):
-                self.movement_y = -v
+                self.movement_y = -ve
             elif (collision == "right"):
-                self.movement_y = v
+                self.movement_y = ve
 
 
 def generate_level(level):
@@ -277,6 +279,9 @@ def generate_level(level):
 def collision(points_group, player_group, cherry_group, enemy_group,
               super_points_group):
     global count
+    global ve
+    global v
+    global color
     collisions = pygame.sprite.groupcollide(player_group, points_group,
                                             False, True)
     collisions_for_cherry = pygame.sprite.groupcollide(
@@ -295,12 +300,14 @@ def collision(points_group, player_group, cherry_group, enemy_group,
     if enemy_and_player:
         pygame.font.init()
         font = pygame.font.SysFont('Comic Sans MS', 30)
+        color = (255, 0, 0)
         screen.blit(font.render('Game over', False, (255, 0, 0)), (750, 600))
-    if count >= 1510 and count < 3030:
+    if count == 1510:
         generate_level(load_level('level2.txt'))
-    elif count >= 3030 and count < 4450:
+        ve += 5
+    elif count == 3030:
         generate_level(load_level('level3.txt'))
-    elif count >= 4450:
+    elif count == 4450:
         pygame.font.init()
         font = pygame.font.Font(None, 50)
         screen.blit(font.render('Win', False, (0, 255, 0)), (400, 600))
@@ -312,6 +319,7 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+    tiles_group.draw(screen)
     all_sprites.draw(screen)
     draw(screen)
     all_sprites.update()
