@@ -121,12 +121,11 @@ class SuperPoint(GameObj):
     d = (15, 15)
 
 
-class Tile(GameObj):
-    group = tiles_group
-
+class Tile(pygame.sprite.Sprite):
     def __init__(self, tile_type, x_pos, y_pos):
+        super().__init__(tiles_group)
         self.image = tile_images[tile_type][0]
-        super().__init__(x_pos, y_pos)
+        self.rect = self.image.get_rect().move(x_pos * tile_width, y_pos * tile_height)
 
 
 class Sprite(GameObj):
