@@ -44,22 +44,22 @@ def load_level(filename):
 pygame.display.set_icon(load_image('logo.png'))
 player_image = load_image("pacman/pacman1.png")
 tile_images = {
-    'wall': load_image('map/wall.png'),
-    'empty': load_image('map/black.png'),
-    'wall2': load_image('map/wall2.png'),
-    'wall3': load_image('map/wall3.png'),
-    'wall4': load_image('map/wall4.png'),
-    'wall5': load_image('map/wall5.png'),
-    'wall6': load_image('map/wall6.png'),
-    'wall7': load_image('map/wall7.png'),
-    'wall8': load_image('map/wall8.png'),
-    'wall9': load_image('map/wall9.png'),
-    'wall10': load_image('map/wall10.png'),
-    'wall11': load_image('map/wall11.png'),
-    'wall12': load_image('map/wall12.png'),
-    'wall13': load_image('map/wall13.png'),
-    'wall14': load_image('map/wall14.png'),
-    'wall15': load_image('map/wall15.png')
+    'b': (load_image('map/black.png'), (False, False, False, False)),
+    '#': (load_image('map/wall.png'), (True, True, True, True)),
+    '$': (load_image('map/wall2.png'), (False, True, False, True)),
+    '!': (load_image('map/wall3.png'), (True, False, True, False)),
+    '%': (load_image('map/wall4.png'), (False, False, True, True)),
+    '^': (load_image('map/wall5.png'), (True, False, False, True)),
+    '&': (load_image('map/wall6.png'), (True, True, False, False)),
+    '*': (load_image('map/wall7.png'), (False, True, True, False)),
+    '`': (load_image('map/wall8.png'), (True, False, True, True)),
+    '~': (load_image('map/wall9.png'), (True, True, False, True)),
+    '/': (load_image('map/wall10.png'), (True, True, True, False)),
+    '?': (load_image('map/wall11.png'), (False, True, True, True)),
+    '|': (load_image('map/wall12.png'), (False, False, False, True)),
+    '>': (load_image('map/wall13.png'), (True, False, False, False)),
+    ',': (load_image('map/wall14.png'), (False, True, False, False)),
+    '<': (load_image('map/wall15.png'), (False, False, True, False)),
 }
 
 all_sprites = pygame.sprite.Group()
@@ -119,7 +119,7 @@ class SuperPoint(pygame.sprite.Sprite):
 class Tile(pygame.sprite.Sprite):
     def __init__(self, tile_type, x_pos, y_pos):
         super().__init__(tiles_group, all_sprites)
-        self.image = tile_images[tile_type]
+        self.image = tile_images[tile_type][0]
         self.rect = self.image.get_rect().move(
             tile_width * x_pos, tile_height * y_pos)
 
@@ -277,76 +277,28 @@ class Enemy(pygame.sprite.Sprite):
 
 
 def generate_level(level):
-    new_enemy, new_player, x, y = None, None, None, None
     for y in range(len(level)):
         for x in range(len(level[y])):
-            if level[y][x] == '.':
-                Tile('empty', x, y)
+            id = level[y][x]
+            if (id in tile_images):
+                Tile(id, x, y)
+                Border.create(x, y, *tile_images[id][1])
+                continue
+            Tile('b', x, y)
+            if id == '.':
                 Point(x, y)
-            elif level[y][x] == 'c':
-                Tile('empty', x, y)
+            elif id == 'c':
                 Cherry(x, y)
-            elif level[y][x] == 's':
-                Tile('empty', x, y)
+            elif id == 's':
                 SuperPoint(x, y)
-            elif level[y][x] == 'b':
-                Tile('empty', x, y)
-            elif level[y][x] == '#':
-                Tile('wall', x, y)
-                Border.create(x, y, True, True, True, True)
-            elif level[y][x] == '$':
-                Tile('wall2', x, y)
-                Border.create(x, y, False, True, False, True)
-            elif level[y][x] == '!':
-                Tile('wall3', x, y)
-                Border.create(x, y, True, False, True, False)
-            elif level[y][x] == '%':
-                Tile('wall4', x, y)
-                Border.create(x, y, False, False, True, True)
-            elif level[y][x] == '^':
-                Tile('wall5', x, y)
-                Border.create(x, y, True, False, False, True)
-            elif level[y][x] == '&':
-                Tile('wall6', x, y)
-                Border.create(x, y, True, True, False, False)
-            elif level[y][x] == '*':
-                Tile('wall7', x, y)
-                Border.create(x, y, False, True, True, False)
-            elif level[y][x] == '`':
-                Tile('wall8', x, y)
-                Border.create(x, y, True, False, True, True)
-            elif level[y][x] == '~':
-                Tile('wall9', x, y)
-                Border.create(x, y, True, True, False, True)
-            elif level[y][x] == '/':
-                Tile('wall10', x, y)
-                Border.create(x, y, True, True, True, False)
-            elif level[y][x] == '?':
-                Tile('wall11', x, y)
-                Border.create(x, y, False, True, True, True)
-            elif level[y][x] == '|':
-                Tile('wall12', x, y)
-                Border.create(x, y, False, False, False, True)
-            elif level[y][x] == '>':
-                Tile('wall13', x, y)
-                Border.create(x, y, True, False, False, False)
-            elif level[y][x] == ',':
-                Tile('wall14', x, y)
-                Border.create(x, y, False, True, False, False)
-            elif level[y][x] == '<':
-                Tile('wall15', x, y)
-                Border.create(x, y, False, False, True, False)
-            elif level[y][x] == '@':
-                Tile('empty', x, y)
-                new_player = Player(3, 1, x, y)
-            elif level[y][x] == 'e':
-                Tile('empty', x, y)
-                new_enemy = Enemy(2, 1, x, y)
+            elif id == '@':
+                Player(3, 1, x, y)
+            elif id == 'e':
+                Enemy(2, 1, x, y)
                 Point(x, y)
-    return new_enemy, new_player, x, y
 
 
-enemy, player, level_x, level_y = generate_level(load_level('level3.txt'))
+generate_level(load_level('level3.txt'))
 
 
 def collision(points_group, player_group, cherry_group, enemy_group,
