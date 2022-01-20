@@ -17,11 +17,12 @@ color = (255, 255, 255)
 win_color = (255, 255, 255)
 time_now = time()
 timer = time() - time_now
-
-
-def start_screen():
-    fon = pygame.transform.scale(load_image('wallpaper.jpg'), (1000, 650))
-    screen.blit(fon, (0, 0))
+pygame.mixer.init()
+start_sound = pygame.mixer.Sound('data/sounds/pacman_beginning.wav')
+death_sound = pygame.mixer.Sound('data/sounds/pacman_death.wav')
+background_sound = pygame.mixer.Sound('data/sounds/siren_1.wav')
+eatfruit_sound = pygame.mixer.Sound('data/sounds/pacman_eatfruit.wav')
+point_sound = pygame.mixer.Sound('data/sounds/pacman_chomp.wav')
 
 
 def draw(screen):
@@ -54,9 +55,14 @@ def load_level(filename):
     max_width = max(map(len, level_map))
     return list(map(lambda x: x.ljust(max_width, '.'), level_map))
 
+def start_screen():
+    background = pygame.transform.scale(load_image('wallpaper.jpg'), (1000, 650))
+    screen.blit(background, (0, 0))
+
+
 
 pygame.display.set_icon(load_image('logo.png'))
-player_image = load_image("pacman/pacman1.png")
+player_image = pygame.transform.scale(load_image('pacman/pacman1.png'), (int(tile_width * 2.5), int(tile_height * (50/59))))
 tile_images = {
     'wall': load_image('map/wall.png'),
     'empty': load_image('map/black.png'),
@@ -153,6 +159,7 @@ class Player(pygame.sprite.Sprite):
             tile_width * x_pos + 15, tile_height * y_pos + 5)
         self.lookD = "right"
 
+
     def cut_sheet(self, sheet, columns, rows):
         self.rect = pygame.Rect(0, 0, sheet.get_width() // columns,
                                 sheet.get_height() // rows)
@@ -222,7 +229,8 @@ class Player(pygame.sprite.Sprite):
 
 
 class Enemy(pygame.sprite.Sprite):
-    image = load_image("red_ghost.png")
+    image = pygame.transform.scale(load_image('red_ghost.png'), (int(tile_width * 2), int(tile_height * 1)))
+    pygame.draw.rect(screen, "red", (0, 0, 950, 550))
 
     def __init__(self, columns, rows, x_pos, y_pos):
         super().__init__(all_sprites, enemy_group)
@@ -367,6 +375,7 @@ def collision(points_group, player_group, cherry_group, enemy_group,
     global v
     global win_color
     global color
+    global timer
     collisions = pygame.sprite.groupcollide(player_group, points_group,
                                             False, True)
     collisions_for_cherry = pygame.sprite.groupcollide(
@@ -377,21 +386,24 @@ def collision(points_group, player_group, cherry_group, enemy_group,
                                                   False, True)
     if collisions:
         count += 10
+        point_sound.play()
     if collisions_for_cherry:
         count += 100
+        eatfruit_sound.play()
     if super_point:
         count += 50
         pygame.sprite.groupcollide(enemy_group, player_group, True, False)
     if enemy_and_player:
-        pygame.font.init()
-        font = pygame.font.SysFont('Comic Sans MS', 30)
+        background_sound.stop()
+        death_sound.play()
         color = (255, 0, 0)
-    if count == 10:
+    if count == 1510:
         level2()
-    elif count == 30:
+    elif count == 3030:
         level3()
-    elif count == 50:
+    elif count == 10000010:
         win_color = (0, 255, 0)
+        background_sound.stop()
         pygame.font.init()
         font = pygame.font.Font(None, 50)
         screen.blit(font.render('Win', False, (0, 255, 0)), (400, 600))
@@ -416,13 +428,13 @@ def level3():
     v -= 1
 
 
-
 level1()
+start_sound.play()
+background_sound.play(-1)
 running = True
 game_start = False
 while running:
     start_screen()
-    timer = time() - time_now
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -430,6 +442,7 @@ while running:
             if event.key == K_SPACE:
                 game_start = True
     if game_start:
+        timer = time() - time_now
         tiles_group.draw(screen)
         all_sprites.draw(screen)
         draw(screen)
