@@ -420,7 +420,7 @@ def level3():
 
 level1()
 running = True
-game_star = False
+game_start = False
 while running:
     start_screen()
     timer = time() - time_now
