@@ -2,7 +2,6 @@ import pygame
 import os
 from pygame.locals import *
 from time import time
-import ipdb
 
 pygame.display.set_caption('Pacman')
 movement_x = movement_y = 0
