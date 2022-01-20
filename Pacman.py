@@ -20,6 +20,11 @@ time_now = time()
 timer = time() - time_now
 
 
+def start_screen():
+    fon = pygame.transform.scale(load_image('wallpaper.jpg'), (1000, 650))
+    screen.blit(fon, (0, 0))
+
+
 def draw(screen):
     global count
     global timer
@@ -416,16 +421,21 @@ def level3():
 level1()
 running = True
 while running:
+    start_screen()
     timer = time() - time_now
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-    tiles_group.draw(screen)
-    all_sprites.draw(screen)
-    draw(screen)
-    all_sprites.update()
-    collision(points_group, player_group, cherry_group, enemy_group,
-              super_points_group)
-    clock.tick(FPS)
-    pygame.display.flip()
+        if event.type == KEYDOWN:
+            if event.key == K_SPACE:
+                game_start = True
+    if game_start:
+        tiles_group.draw(screen)
+        all_sprites.draw(screen)
+        draw(screen)
+        all_sprites.update()
+        collision(points_group, player_group, cherry_group, enemy_group,
+                super_points_group)
+        clock.tick(FPS)
+        pygame.display.flip()
 pygame.quit()
