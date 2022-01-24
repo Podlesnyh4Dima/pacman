@@ -10,6 +10,7 @@ clock = pygame.time.Clock()
 ve = 5
 v = 5
 count = 0
+cur_level = 1
 tile_width = tile_height = 50
 size = width, height = 1000, 650
 screen = pygame.display.set_mode(size)
@@ -55,10 +56,12 @@ def load_level(filename):
     max_width = max(map(len, level_map))
     return list(map(lambda x: x.ljust(max_width, '.'), level_map))
 
-def start_screen():
-    background = pygame.transform.scale(load_image('wallpaper.jpg'), (1000, 650))
-    screen.blit(background, (0, 0))
 
+background = pygame.transform.scale(load_image('wallpaper.jpg'), (1000, 650))
+
+
+def start_screen():
+    screen.blit(background, (0, 0))
 
 
 pygame.display.set_icon(load_image('logo.png'))
@@ -92,6 +95,26 @@ super_points_group = pygame.sprite.Group()
 borders_group = pygame.sprite.Group()
 
 
+def sprites():
+    global all_sprites
+    global enemy_group
+    global tiles_group
+    global player_group
+    global points_group
+    global cherry_group
+    global super_points_group
+    global borders_group
+
+    all_sprites = pygame.sprite.Group()
+    enemy_group = pygame.sprite.Group()
+    tiles_group = pygame.sprite.Group()
+    player_group = pygame.sprite.Group()
+    points_group = pygame.sprite.Group()
+    cherry_group = pygame.sprite.Group()
+    super_points_group = pygame.sprite.Group()
+    borders_group = pygame.sprite.Group()
+
+    
 class Border(pygame.sprite.Sprite):
     def __init__(self, x, y, w, h):
         super().__init__(borders_group)
@@ -133,7 +156,7 @@ class SuperPoint(pygame.sprite.Sprite):
         super().__init__(super_points_group, all_sprites)
         self.image = pygame.image.load('data/super_point.png')
         self.rect = self.image.get_rect().move(
-            x_pos * tile_width + 23, 23 + y_pos * tile_height)
+            x_pos * tile_width, y_pos * tile_height)
 
 
 class Tile(pygame.sprite.Sprite):
@@ -376,6 +399,7 @@ def collision(points_group, player_group, cherry_group, enemy_group,
     global win_color
     global color
     global timer
+    global cur_level
     collisions = pygame.sprite.groupcollide(player_group, points_group,
                                             False, True)
     collisions_for_cherry = pygame.sprite.groupcollide(
@@ -397,10 +421,14 @@ def collision(points_group, player_group, cherry_group, enemy_group,
         background_sound.stop()
         death_sound.play()
         color = (255, 0, 0)
-    if count == 1510:
+    if count >= 1510 and cur_level == 1:
+        sprites()
         level2()
-    elif count == 3030:
+        cur_level = 2
+    elif count == 3030 and cur_level == 2:
+        sprites()
         level3()
+        cur_level = 3
     elif count == 10000010:
         win_color = (0, 255, 0)
         background_sound.stop()
