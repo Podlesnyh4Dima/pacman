@@ -11,6 +11,8 @@ ve = 5
 v = 5
 count = 0
 cur_level = 1
+game_over = False
+win = False
 tile_width = tile_height = 50
 size = width, height = 1000, 650
 screen = pygame.display.set_mode(size)
@@ -57,10 +59,12 @@ def load_level(filename):
     return list(map(lambda x: x.ljust(max_width, '.'), level_map))
 
 
-background = pygame.transform.scale(load_image('wallpaper.jpg'), (1000, 650))
+background_start = pygame.transform.scale(load_image('wallpaper.jpg'), (1000, 650))
+background_over = pygame.transform.scale(load_image('gameover.jpg'), (1000, 650))
+background_win = pygame.transform.scale(load_image('winer.jpg'), (1000, 650))
 
 
-def start_screen():
+def screens(background):
     screen.blit(background, (0, 0))
 
 
@@ -400,6 +404,8 @@ def collision(points_group, player_group, cherry_group, enemy_group,
     global color
     global timer
     global cur_level
+    global game_over
+    global win
     collisions = pygame.sprite.groupcollide(player_group, points_group,
                                             False, True)
     collisions_for_cherry = pygame.sprite.groupcollide(
@@ -421,11 +427,12 @@ def collision(points_group, player_group, cherry_group, enemy_group,
         background_sound.stop()
         death_sound.play()
         color = (255, 0, 0)
+        game_over = True
     if count >= 1510 and cur_level == 1:
         sprites()
         level2()
         cur_level = 2
-    elif count == 3030 and cur_level == 2:
+    elif count >= 3030 and cur_level == 2:
         sprites()
         level3()
         cur_level = 3
@@ -435,6 +442,7 @@ def collision(points_group, player_group, cherry_group, enemy_group,
         pygame.font.init()
         font = pygame.font.Font(None, 50)
         screen.blit(font.render('Win', False, (0, 255, 0)), (400, 600))
+        win = True
 
 
 def level1():
@@ -462,7 +470,7 @@ background_sound.play(-1)
 running = True
 game_start = False
 while running:
-    start_screen()
+    screens(background_start)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -478,5 +486,9 @@ while running:
         collision(points_group, player_group, cherry_group, enemy_group,
                 super_points_group)
         clock.tick(FPS)
-        pygame.display.flip()
+                if game_over:
+            screens(background_over)
+        if win:
+            screens(background_win)
+    pygame.display.flip()
 pygame.quit()
