@@ -445,7 +445,7 @@ def collision(points_group, player_group, cherry_group, enemy_group,
 
 
 def level1():
-    generate_level(load_level('level3.txt'))
+    generate_level(load_level('levelex.txt'))
 
 
 def level2():
