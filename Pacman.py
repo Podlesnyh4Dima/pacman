@@ -34,15 +34,11 @@ def draw(screen):
     pygame.font.init()
     font = pygame.font.Font(None, 50)
     screen.blit(pygame.transform.scale(
-        load_image('fon.png'), (1000, 50)),  (0, 600))
+        load_image('fon.png'), (1000, 50)), (0, 600))
     screen.blit(font.render('Счёт: ' + str(count), False,
                             (255, 255, 255)), (0, 600))
-    screen.blit(font.render('Win', False,
-                            (255, 255, 255)), (400, 600))
-    screen.blit(font.render('Game over', False, color), (750, 600))
     screen.blit(font.render('Time: ' + str(int(timer)), False,
                             (255, 255, 255)), (500, 600))
-    screen.blit(font.render('Win', False, win_color), (400, 600))
 
 
 def load_image(name, colorkey=None):
@@ -68,14 +64,15 @@ background_win = pygame.transform.scale(load_image('winer.jpg'), (1000, 650))
 def start_screen():
     screen.blit(background_start, (0, 0))
     screen.blit(background_pacman, (0, 0))
-    
+
 
 def screens(background):
     screen.blit(background, (0, 0))
 
 
 pygame.display.set_icon(load_image('logo.png'))
-player_image = pygame.transform.scale(load_image('pacman/pacman1.png'), (int(tile_width * 2.5), int(tile_height * (50/59))))
+player_image = pygame.transform.scale(load_image('pacman/pacman1.png'),
+                                      (int(tile_width * 2.5), int(tile_height * (50 / 59))))
 tile_images = {
     'wall': load_image('map/wall.png'),
     'empty': load_image('map/black.png'),
@@ -124,7 +121,7 @@ def sprites():
     super_points_group = pygame.sprite.Group()
     borders_group = pygame.sprite.Group()
 
-    
+
 class Border(pygame.sprite.Sprite):
     def __init__(self, x, y, w, h):
         super().__init__(borders_group)
@@ -192,7 +189,6 @@ class Player(pygame.sprite.Sprite):
             tile_width * x_pos + 15, tile_height * y_pos + 5)
         self.lookD = "right"
 
-
     def cut_sheet(self, sheet, columns, rows):
         self.rect = pygame.Rect(0, 0, sheet.get_width() // columns,
                                 sheet.get_height() // rows)
@@ -200,7 +196,7 @@ class Player(pygame.sprite.Sprite):
             for i in range(columns):
                 frame_location = (self.rect.w * i, self.rect.h * j)
                 self.frames.append(sheet.subsurface(pygame.Rect(frame_location,
-                                                    self.rect.size)))
+                                                                self.rect.size)))
 
     def update(self):
         if event.type == KEYDOWN:
@@ -284,7 +280,7 @@ class Enemy(pygame.sprite.Sprite):
             for i in range(columns):
                 frame_location = (self.rect.w * i, self.rect.h * j)
                 self.frames.append(sheet.subsurface(pygame.Rect(
-                    frame_location,  self.rect.size)))
+                    frame_location, self.rect.size)))
 
     def update(self):
         self.rect.x += self.movement_x
@@ -432,27 +428,24 @@ def collision(points_group, player_group, cherry_group, enemy_group,
     if enemy_and_player:
         background_sound.stop()
         death_sound.play()
-        color = (255, 0, 0)
         game_over = True
-    if count >= 1510 and cur_level == 1:
+    if count >= 1500 and cur_level == 1:
         sprites()
         level2()
         cur_level = 2
-    elif count >= 3030 and cur_level == 2:
+    elif count >= 2920 and cur_level == 2:
         sprites()
         level3()
         cur_level = 3
-    elif count == 10000010:
+    elif count == 4250:
         win_color = (0, 255, 0)
         background_sound.stop()
         pygame.font.init()
-        font = pygame.font.Font(None, 50)
-        screen.blit(font.render('Win', False, (0, 255, 0)), (400, 600))
         win = True
 
 
 def level1():
-    generate_level(load_level('levelex.txt'))
+    generate_level(load_level('level3.txt'))
 
 
 def level2():
@@ -490,7 +483,7 @@ while running:
         draw(screen)
         all_sprites.update()
         collision(points_group, player_group, cherry_group, enemy_group,
-                super_points_group)
+                  super_points_group)
         clock.tick(FPS)
         if game_over:
             screens(background_over)
