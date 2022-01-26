@@ -60,9 +60,15 @@ def load_level(filename):
 
 
 background_start = pygame.transform.scale(load_image('wallpaper.jpg'), (1000, 650))
+background_pacman = pygame.transform.scale(load_image('pacman_start.png'), (1000, 650))
 background_over = pygame.transform.scale(load_image('gameover.jpg'), (1000, 650))
 background_win = pygame.transform.scale(load_image('winer.jpg'), (1000, 650))
 
+
+def start_screen():
+    screen.blit(background_start, (0, 0))
+    screen.blit(background_pacman, (0, 0))
+    
 
 def screens(background):
     screen.blit(background, (0, 0))
@@ -470,7 +476,7 @@ background_sound.play(-1)
 running = True
 game_start = False
 while running:
-    screens(background_start)
+    start_screen()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
