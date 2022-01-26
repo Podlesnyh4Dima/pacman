@@ -486,7 +486,7 @@ while running:
         collision(points_group, player_group, cherry_group, enemy_group,
                 super_points_group)
         clock.tick(FPS)
-                if game_over:
+        if game_over:
             screens(background_over)
         if win:
             screens(background_win)
